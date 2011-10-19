@@ -76,7 +76,7 @@ class AccessClass extends AccessBase
 			$a = new AccessProperty($this->reflection->getName(), $name);
 			$this->properties[$name] = $a->asInstance($this->instance);
 		}
-		return $this->properties[$name]->set($value);
+		$this->properties[$name]->set($value);
 	}
 
 	/**

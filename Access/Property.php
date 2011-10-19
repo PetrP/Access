@@ -40,16 +40,20 @@ class AccessProperty extends AccessBase
 
 	/**
 	 * @param mixed
-	 * @return void
+	 * @return AccessProperty $this
 	 */
 	public function set($value)
 	{
 		if ($this->instance)
 		{
-			return $this->reflection->setValue($this->instance, $value);
+			$this->reflection->setValue($this->instance, $value);
 		}
-		$this->check();
-		return $this->reflection->setValue($value);
+		else
+		{
+			$this->check();
+			$this->reflection->setValue($value);
+		}
+		return $this;
 	}
 
 	private function check()
