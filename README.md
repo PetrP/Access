@@ -62,7 +62,8 @@ assert(11, $a->bar(1));
 
 Requirements
 ------------
-PHP 5.3.2 or later.
+AccessMethod require PHP 5.3.2 or later.
+AccessProperty require PHP 5.3.0 or later.
 
 Limited support for php 5.2 will be soon.
 

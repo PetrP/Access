@@ -29,6 +29,10 @@ class AccessProperty extends AccessBase
 	 */
 	public function __construct($object, $property)
 	{
+		if (PHP_VERSION_ID < 50300)
+		{
+			throw new Exception('AccessProperty needs PHP 5.3.0 or newer.');
+		}
 		parent::__construct($object, new ReflectionProperty($object, $property));
 		$this->reflection->setAccessible(true);
 	}

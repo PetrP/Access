@@ -6,11 +6,6 @@
  * @license "New" BSD License
  */
 
-if (PHP_VERSION_ID < 50302)
-{
-	throw new Exception('Access needs PHP 5.3.2 or newer.');
-}
-
 require_once __DIR__ . '/Base.php';
 require_once __DIR__ . '/Class.php';
 require_once __DIR__ . '/Method.php';

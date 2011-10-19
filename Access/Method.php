@@ -29,6 +29,10 @@ class AccessMethod extends AccessBase
 	 */
 	public function __construct($object, $method)
 	{
+		if (PHP_VERSION_ID < 50302)
+		{
+			throw new Exception('AccessMethod needs PHP 5.3.2 or newer.');
+		}
 		parent::__construct($object, new ReflectionMethod($object, $method));
 		$this->reflection->setAccessible(true);
 	}
