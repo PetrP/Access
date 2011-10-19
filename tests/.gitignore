@@ -1,0 +1,3 @@
+/tmp/*
+/report/*
+/libs/Nette/lockfile
