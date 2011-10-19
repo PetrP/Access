@@ -1,8 +1,6 @@
 <?php
 
-use Nette\Object;
-
-abstract class AccessBase extends Object
+abstract class AccessBase
 {
 
 	/** @var ReflectionClass|ReflectionMethod|ReflectionProperty */
@@ -52,5 +50,65 @@ abstract class AccessBase extends Object
 		}
 		$this->instance = $object;
 		return $this;
+	}
+
+	/**
+	 * Call to undefined method.
+	 * @throws Exception
+	 */
+	public function __call($name, $args)
+	{
+		$class = get_class($this);
+		throw new Exception("Call to undefined method $class::$name().");
+	}
+
+	/**
+	 * Call to undefined static method.
+	 * @throws Exception
+	 */
+	public static function __callStatic($name, $args)
+	{
+		$class = get_called_class();
+		throw new Exception("Call undefined static method $class::$name().");
+	}
+
+	/**
+	 * Read undeclared property.
+	 * @throws Exception
+	 */
+	public function &__get($name)
+	{
+		$class = get_class($this);
+		throw new Exception("Cannot read undeclared property $class::\$$name.");
+	}
+
+	/**
+	 * Write to undeclared property.
+	 * @throws Exception
+	 */
+	public function __set($name, $value)
+	{
+		$class = get_class($this);
+		throw new Exception("Cannot write to undeclared property $class::\$$name.");
+	}
+
+	/**
+	 * Access to undeclared property.
+	 * @throws Exception
+	 */
+	public function __isset($name)
+	{
+		$class = get_class($this);
+		throw new Exception("Cannot check existence of property $class::\$$name.");
+	}
+
+	/**
+	 * Access to undeclared property.
+	 * @throws Exception
+	 */
+	public function __unset($name)
+	{
+		$class = get_class($this);
+		throw new Exception("Cannot unset property $class::\$$name.");
 	}
 }
