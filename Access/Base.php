@@ -9,7 +9,6 @@ abstract class AccessBase
 	/** @var object|NULL */
 	protected $instance;
 
-
 	/**
 	 * @param object|string object or class name
 	 * @param ReflectionClass|ReflectionMethod|ReflectionProperty
