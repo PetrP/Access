@@ -18,7 +18,22 @@ abstract class AccessBase extends Object
 
 	public function asInstance($object)
 	{
-		if (!is_object($object) AND $object !== NULL)
+		if (is_object($object))
+		{
+			if ($this->reflection instanceof ReflectionClass)
+			{
+				$class = $this->reflection->getName();
+			}
+			else
+			{
+				$class = $this->reflection->getDeclaringClass()->getName();
+			}
+			if (!($object instanceof $class))
+			{
+				throw new Exception('Must be instance of accessible class.');
+			}
+		}
+		else if ($object !== NULL)
 		{
 			throw new Exception('Instance must be object or NULL.');
 		}

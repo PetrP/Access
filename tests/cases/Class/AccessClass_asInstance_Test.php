@@ -69,4 +69,17 @@ class AccessClass_asInstance_Test extends TestCase
 		$this->setExpectedException('Exception', 'Instance must be object or NULL.');
 		throw $e;
 	}
+
+	public function testDiferentObject()
+	{
+		$a = new AccessClass('TestAccessMethod');
+		try {
+			$a->asInstance($this);
+			$this->fail();
+		} catch (Exception $e) {}
+
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->setExpectedException('Exception', 'Must be instance of accessible class.');
+		throw $e;
+	}
 }
