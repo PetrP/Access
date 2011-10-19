@@ -1,13 +1,33 @@
 <?php
 
+/**
+ * Access to property.
+ *
+ * <code>
+ * $a = Access(new Object, '$propertyName');
+ * $a->set(123);
+ * $a->get(123);
+ * </code>
+ *
+ * <code>
+ * $a = Access('Object', '$propertyName');
+ * $a->asInstance(new Object);
+ * </code>
+ */
 class AccessProperty extends AccessBase
 {
+
+	/**
+	 * @param object|string object or class name
+	 * @param string property name
+	 */
 	public function __construct($object, $property)
 	{
 		parent::__construct($object, new ReflectionProperty($object, $property));
 		$this->reflection->setAccessible(true);
 	}
 
+	/** @return mixed */
 	public function get()
 	{
 		if ($this->instance)
@@ -18,6 +38,10 @@ class AccessProperty extends AccessBase
 		return $this->reflection->getValue();
 	}
 
+	/**
+	 * @param mixed
+	 * @return void
+	 */
 	public function set($value)
 	{
 		if ($this->instance)

@@ -10,6 +10,38 @@ require_once __DIR__ . '/Class.php';
 require_once __DIR__ . '/Method.php';
 require_once __DIR__ . '/Property.php';
 
+/**
+ * Access to method, property or whole class.
+ *
+ * Method:
+ * <code>
+ * $a = Access(new Object, 'methodName');
+ * $a->call();
+ * $a->call(1, 2, 3);
+ * </code>
+ *
+ * Property (prefixed with dollar sign):
+ * <code>
+ * $a = Access(new Object, '$propertyName');
+ * $a->set(123);
+ * $a->get(123);
+ * </code>
+ *
+ * Whole class
+ * <code>
+ * $a = Access(new Object);
+ *
+ * $a->method();
+ * $a->method(1, 2, 3);
+ *
+ * $a->property = 123;
+ * $a->property;
+ * </code>
+ *
+ * @param object|string object or class name
+ * @param string|NULL $property or method
+ * @return AccessMethod|AccessProperty|AccessClass
+ */
 function Access($object, $what = NULL)
 {
 	if ($what === NULL)

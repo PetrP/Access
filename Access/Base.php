@@ -4,9 +4,18 @@ use Nette\Object;
 
 abstract class AccessBase extends Object
 {
+
+	/** @var ReflectionClass|ReflectionMethod|ReflectionProperty */
 	protected $reflection;
+
+	/** @var object|NULL */
 	protected $instance;
 
+
+	/**
+	 * @param object|string object or class name
+	 * @param ReflectionClass|ReflectionMethod|ReflectionProperty
+	 */
 	public function __construct($object, Reflector $r)
 	{
 		$this->reflection = $r;
@@ -16,6 +25,10 @@ abstract class AccessBase extends Object
 		}
 	}
 
+	/**
+	 * @param object|NULL
+	 * @return AccessBase $this
+	 */
 	public function asInstance($object)
 	{
 		if (is_object($object))
