@@ -6,6 +6,8 @@
  * @license "New" BSD License
  */
 
+require_once __DIR__ . '/Init.php';
+
 abstract class AccessBase
 {
 
