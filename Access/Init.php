@@ -1,4 +1,10 @@
 <?php
+/**
+ * Access
+ * @link http://github.com/PetrP/Access
+ * @author Petr Procházka (petr@petrp.cz)
+ * @license "New" BSD License
+ */
 
 if (PHP_VERSION_ID < 50302)
 {
