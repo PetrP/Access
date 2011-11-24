@@ -14,6 +14,14 @@ class AccessProperty_set_Test extends TestCase
 		$this->assertAttributeSame(111, 'private', $o);
 	}
 
+	public function testPrivateOnParent()
+	{
+		$o = new TestAccessProperty2;
+		$a = new AccessProperty($o, 'private');
+		$this->assertSame($a, $a->set(111));
+		$this->assertAttributeSame(111, 'private', $o);
+	}
+
 	public function testProtected()
 	{
 		$o = new TestAccessProperty;
@@ -33,6 +41,15 @@ class AccessProperty_set_Test extends TestCase
 	public function testPrivateStatic1()
 	{
 		$o = new TestAccessProperty;
+		$a = new AccessProperty($o, 'privateStatic');
+		$this->assertSame($a, $a->set(444));
+		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');
+		$this->assertSame($a, $a->set(4));
+	}
+
+	public function testPrivateOnParentStatic1()
+	{
+		$o = new TestAccessProperty2;
 		$a = new AccessProperty($o, 'privateStatic');
 		$this->assertSame($a, $a->set(444));
 		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');
@@ -60,6 +77,14 @@ class AccessProperty_set_Test extends TestCase
 	public function testPrivateStatic2()
 	{
 		$a = new AccessProperty('TestAccessProperty', 'privateStatic');
+		$this->assertSame($a, $a->set(444));
+		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');
+		$this->assertSame($a, $a->set(4));
+	}
+
+	public function testPrivateOnParentStatic2()
+	{
+		$a = new AccessProperty('TestAccessProperty2', 'privateStatic');
 		$this->assertSame($a, $a->set(444));
 		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');
 		$this->assertSame($a, $a->set(4));

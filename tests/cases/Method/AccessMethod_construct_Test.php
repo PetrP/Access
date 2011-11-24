@@ -27,6 +27,27 @@ class AccessMethod_construct_Test extends TestCase
 		$this->assertSame('_private', $r->getName());
 	}
 
+	public function testClassOnParent()
+	{
+		$a = new AccessMethod('TestAccessMethod2', '_private');
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_private', $r->getName());
+	}
+
+	public function testObjectOnParent()
+	{
+		$o = new TestAccessMethod2;
+		$a = new AccessMethod($o, '_private');
+		$this->assertAttributeSame($o, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_private', $r->getName());
+	}
+
 	public function testUnexistsClass()
 	{
 		$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');

@@ -38,3 +38,8 @@ class TestAccessMethod extends Nette\Object
 		$this->public = $p;
 	}
 }
+
+class TestAccessMethod2 extends TestAccessMethod
+{
+
+}

@@ -27,6 +27,27 @@ class AccessProperty_construct_Test extends TestCase
 		$this->assertSame('private', $r->getName());
 	}
 
+	public function testClassOnParent()
+	{
+		$a = new AccessProperty('TestAccessProperty2', 'private');
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionProperty', $r);
+		$this->assertSame('TestAccessProperty', $r->getDeclaringClass()->getName());
+		$this->assertSame('private', $r->getName());
+	}
+
+	public function testObjectOnParent()
+	{
+		$o = new TestAccessProperty2;
+		$a = new AccessProperty($o, 'private');
+		$this->assertAttributeSame($o, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionProperty', $r);
+		$this->assertSame('TestAccessProperty', $r->getDeclaringClass()->getName());
+		$this->assertSame('private', $r->getName());
+	}
+
 	public function testUnexistsClass()
 	{
 		$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');

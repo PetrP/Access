@@ -33,7 +33,21 @@ class AccessProperty extends AccessBase
 		{
 			throw new Exception('AccessProperty needs PHP 5.3.0 or newer.');
 		}
-		parent::__construct($object, new ReflectionProperty($object, $property));
+
+		try {
+			$r = new ReflectionProperty($object, $property);
+		} catch (ReflectionException $e) {
+			$class = $object;
+			while ($class = get_parent_class($class))
+			{
+				try {
+					$r = new ReflectionProperty($class, $property);
+					break;
+				} catch (ReflectionException $ee) {}
+			}
+			if (!isset($r)) throw $e;
+		}
+		parent::__construct($object, $r);
 		$this->reflection->setAccessible(true);
 	}
 

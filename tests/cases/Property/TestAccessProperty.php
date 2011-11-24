@@ -9,3 +9,8 @@ class TestAccessProperty extends Nette\Object
 	protected static $protectedStatic = 5;
 	public static $publicStatic = 6;
 }
+
+class TestAccessProperty2 extends TestAccessProperty
+{
+
+}

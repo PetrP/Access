@@ -11,6 +11,12 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(1, $a->callArgs());
 	}
 
+	public function testPrivateOnParent()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, '_private');
+		$this->assertSame(1, $a->callArgs());
+	}
+
 	public function testProtected()
 	{
 		$a = new AccessMethod(new TestAccessMethod, '_protected');
@@ -29,6 +35,12 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(4, $a->callArgs());
 	}
 
+	public function testPrivateOnParentStatic1()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, 'privateStatic');
+		$this->assertSame(4, $a->callArgs());
+	}
+
 	public function testProtectedStatic1()
 	{
 		$a = new AccessMethod(new TestAccessMethod, 'protectedStatic');
@@ -44,6 +56,12 @@ class AccessMethod_callArgs_Test extends TestCase
 	public function testPrivateStatic2()
 	{
 		$a = new AccessMethod('TestAccessMethod', 'privateStatic');
+		$this->assertSame(4, $a->callArgs());
+	}
+
+	public function testPrivateOnParentStatic2()
+	{
+		$a = new AccessMethod('TestAccessMethod2', 'privateStatic');
 		$this->assertSame(4, $a->callArgs());
 	}
 

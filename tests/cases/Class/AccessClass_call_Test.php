@@ -11,6 +11,12 @@ class AccessClass_call_Test extends TestCase
 		$this->assertSame(1, $a->_private());
 	}
 
+	public function testPrivateOnParent()
+	{
+		$a = new AccessClass(new TestAccessMethod2);
+		$this->assertSame(1, $a->_private());
+	}
+
 	public function testProtected()
 	{
 		$a = new AccessClass(new TestAccessMethod);
@@ -29,6 +35,12 @@ class AccessClass_call_Test extends TestCase
 		$this->assertSame(4, $a->privateStatic());
 	}
 
+	public function testPrivateOnParentStatic1()
+	{
+		$a = new AccessClass(new TestAccessMethod2);
+		$this->assertSame(4, $a->privateStatic());
+	}
+
 	public function testProtectedStatic1()
 	{
 		$a = new AccessClass(new TestAccessMethod);
@@ -44,6 +56,12 @@ class AccessClass_call_Test extends TestCase
 	public function testPrivateStatic2()
 	{
 		$a = new AccessClass('TestAccessMethod');
+		$this->assertSame(4, $a->privateStatic());
+	}
+
+	public function testPrivateOnParentStatic2()
+	{
+		$a = new AccessClass('TestAccessMethod2');
 		$this->assertSame(4, $a->privateStatic());
 	}
 
