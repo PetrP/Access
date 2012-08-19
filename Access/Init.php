@@ -6,6 +6,13 @@
  * @license "New" BSD License
  */
 
+if (!defined('PHP_VERSION_ID'))
+{
+	// php < 5.2.7
+	$tmp = explode('.', PHP_VERSION);
+	define('PHP_VERSION_ID', ($tmp[0] * 10000 + $tmp[1] * 100 + $tmp[2]));
+}
+
 require_once dirname(__FILE__) . '/Base.php';
 require_once dirname(__FILE__) . '/Class.php';
 require_once dirname(__FILE__) . '/Method.php';
