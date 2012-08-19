@@ -2,6 +2,7 @@
 
 /**
  * @covers AccessClass::__set
+ * @covers AccessAccessor
  */
 class AccessClass_set_Test extends TestCase
 {
@@ -29,9 +30,25 @@ class AccessClass_set_Test extends TestCase
 		$this->assertAttributeSame(222, 'protected', $o);
 	}
 
+	public function testProtectedOnParent()
+	{
+		$o = new TestAccessProperty2;
+		$a = new AccessClass($o);
+		$a->protected = 222;
+		$this->assertAttributeSame(222, 'protected', $o);
+	}
+
 	public function testPublic()
 	{
 		$o = new TestAccessProperty;
+		$a = new AccessClass($o);
+		$a->public = 333;
+		$this->assertAttributeSame(333, 'public', $o);
+	}
+
+	public function testPublicOnParent()
+	{
+		$o = new TestAccessProperty2;
 		$a = new AccessClass($o);
 		$a->public = 333;
 		$this->assertAttributeSame(333, 'public', $o);
@@ -64,9 +81,27 @@ class AccessClass_set_Test extends TestCase
 		$a->protectedStatic = 5;
 	}
 
+	public function testProtectedOnParentStatic1()
+	{
+		$o = new TestAccessProperty2;
+		$a = new AccessClass($o);
+		$a->protectedStatic = 555;
+		$this->assertAttributeSame(555, 'protectedStatic', 'TestAccessProperty');
+		$a->protectedStatic = 5;
+	}
+
 	public function testPublicStatic1()
 	{
 		$o = new TestAccessProperty;
+		$a = new AccessClass($o);
+		$a->publicStatic = 666;
+		$this->assertAttributeSame(666, 'publicStatic', 'TestAccessProperty');
+		$a->publicStatic = 6;
+	}
+
+	public function testPublicOnParentStatic1()
+	{
+		$o = new TestAccessProperty2;
 		$a = new AccessClass($o);
 		$a->publicStatic = 666;
 		$this->assertAttributeSame(666, 'publicStatic', 'TestAccessProperty');
@@ -97,9 +132,25 @@ class AccessClass_set_Test extends TestCase
 		$a->protectedStatic = 5;
 	}
 
+	public function testProtectedOnParentStatic2()
+	{
+		$a = new AccessClass('TestAccessProperty2');
+		$a->protectedStatic = 555;
+		$this->assertAttributeSame(555, 'protectedStatic', 'TestAccessProperty');
+		$a->protectedStatic = 5;
+	}
+
 	public function testPublicStatic2()
 	{
 		$a = new AccessClass('TestAccessProperty');
+		$a->publicStatic = 666;
+		$this->assertAttributeSame(666, 'publicStatic', 'TestAccessProperty');
+		$a->publicStatic = 6;
+	}
+
+	public function testPublicOnParentStatic2()
+	{
+		$a = new AccessClass('TestAccessProperty2');
 		$a->publicStatic = 666;
 		$this->assertAttributeSame(666, 'publicStatic', 'TestAccessProperty');
 		$a->publicStatic = 6;
@@ -110,5 +161,12 @@ class AccessClass_set_Test extends TestCase
 		$a = new AccessClass('TestAccessProperty');
 		$this->setExpectedException('Exception', 'Property TestAccessProperty::$private is not static.');
 		$a->private = 111;
+	}
+
+	public function testNonStaticProtected()
+	{
+		$a = new AccessClass('TestAccessProperty');
+		$this->setExpectedException('Exception', 'Property TestAccessProperty::$protected is not static.');
+		$a->protected = 111;
 	}
 }

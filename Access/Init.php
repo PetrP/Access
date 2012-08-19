@@ -17,6 +17,10 @@ require_once dirname(__FILE__) . '/Base.php';
 require_once dirname(__FILE__) . '/Class.php';
 require_once dirname(__FILE__) . '/Method.php';
 require_once dirname(__FILE__) . '/Property.php';
+if (PHP_VERSION_ID >= 50300)
+{
+	require_once dirname(__FILE__) . '/Accessor.php';
+}
 
 /**
  * Access to method, property or whole class.

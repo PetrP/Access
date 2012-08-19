@@ -2,6 +2,7 @@
 
 /**
  * @covers AccessClass::__get
+ * @covers AccessAccessor
  */
 class AccessClass_get_Test extends TestCase
 {
@@ -47,9 +48,21 @@ class AccessClass_get_Test extends TestCase
 		$this->assertSame(5, $a->protectedStatic);
 	}
 
+	public function testProtectedOnParentStatic1()
+	{
+		$a = new AccessClass(new TestAccessProperty2);
+		$this->assertSame(5, $a->protectedStatic);
+	}
+
 	public function testPublicStatic1()
 	{
 		$a = new AccessClass(new TestAccessProperty);
+		$this->assertSame(6, $a->publicStatic);
+	}
+
+	public function testPublicOnParentStatic1()
+	{
+		$a = new AccessClass(new TestAccessProperty2);
 		$this->assertSame(6, $a->publicStatic);
 	}
 
@@ -71,9 +84,21 @@ class AccessClass_get_Test extends TestCase
 		$this->assertSame(5, $a->protectedStatic);
 	}
 
+	public function testProtectedOnParentStatic2()
+	{
+		$a = new AccessClass('TestAccessProperty2');
+		$this->assertSame(5, $a->protectedStatic);
+	}
+
 	public function testPublicStatic2()
 	{
 		$a = new AccessClass('TestAccessProperty');
+		$this->assertSame(6, $a->publicStatic);
+	}
+
+	public function testPublicOnParentStatic2()
+	{
+		$a = new AccessClass('TestAccessProperty2');
 		$this->assertSame(6, $a->publicStatic);
 	}
 
@@ -82,6 +107,13 @@ class AccessClass_get_Test extends TestCase
 		$a = new AccessClass('TestAccessProperty');
 		$this->setExpectedException('Exception', 'Property TestAccessProperty::$private is not static.');
 		$a->private;
+	}
+
+	public function testNonStaticProtected()
+	{
+		$a = new AccessClass('TestAccessProperty');
+		$this->setExpectedException('Exception', 'Property TestAccessProperty::$protected is not static.');
+		$a->protected;
 	}
 
 	public function testRepeatable()

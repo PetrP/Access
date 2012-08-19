@@ -23,17 +23,15 @@
 class AccessProperty extends AccessBase
 {
 
+	/** @var AccessAccessor */
+	private $access;
+
 	/**
 	 * @param object|string object or class name
 	 * @param string property name
 	 */
 	public function __construct($object, $property)
 	{
-		if (PHP_VERSION_ID < 50300)
-		{
-			throw new Exception('AccessProperty needs PHP 5.3.0 or newer.');
-		}
-
 		try {
 			$r = new ReflectionProperty($object, $property);
 		} catch (ReflectionException $e) {
@@ -48,18 +46,15 @@ class AccessProperty extends AccessBase
 			if (!isset($r)) throw $e;
 		}
 		parent::__construct($object, $r);
-		$this->reflection->setAccessible(true);
+		$accessor = new AccessAccessor;
+		$this->access = $accessor->accessProperty($this->reflection);
 	}
 
 	/** @return mixed */
 	public function get()
 	{
-		if ($this->instance)
-		{
-			return $this->reflection->getValue($this->instance);
-		}
 		$this->check();
-		return $this->reflection->getValue();
+		return call_user_func($this->access->get, $this->instance);
 	}
 
 	/**
@@ -68,15 +63,8 @@ class AccessProperty extends AccessBase
 	 */
 	public function set($value)
 	{
-		if ($this->instance)
-		{
-			$this->reflection->setValue($this->instance, $value);
-		}
-		else
-		{
-			$this->check();
-			$this->reflection->setValue($value);
-		}
+		$this->check();
+		call_user_func($this->access->set, $this->instance, $value);
 		return $this;
 	}
 

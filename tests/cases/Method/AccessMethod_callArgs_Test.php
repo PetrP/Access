@@ -2,6 +2,7 @@
 
 /**
  * @covers AccessMethod::callArgs
+ * @covers AccessAccessor
  */
 class AccessMethod_callArgs_Test extends TestCase
 {
@@ -23,9 +24,21 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(2, $a->callArgs());
 	}
 
+	public function testProtectedOnParent()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, '_protected');
+		$this->assertSame(2, $a->callArgs());
+	}
+
 	public function testPublic()
 	{
 		$a = new AccessMethod(new TestAccessMethod, '_public');
+		$this->assertSame(3, $a->callArgs());
+	}
+
+	public function testPublicOnParent()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, '_public');
 		$this->assertSame(3, $a->callArgs());
 	}
 
@@ -47,9 +60,21 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(5, $a->callArgs());
 	}
 
+	public function testProtectedOnParentStatic1()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, 'protectedStatic');
+		$this->assertSame(5, $a->callArgs());
+	}
+
 	public function testPublicStatic1()
 	{
 		$a = new AccessMethod(new TestAccessMethod, 'publicStatic');
+		$this->assertSame(6, $a->callArgs());
+	}
+
+	public function testPublicOnParentStatic1()
+	{
+		$a = new AccessMethod(new TestAccessMethod2, 'publicStatic');
 		$this->assertSame(6, $a->callArgs());
 	}
 
@@ -71,9 +96,21 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(5, $a->callArgs());
 	}
 
+	public function testProtectedOnParentStatic2()
+	{
+		$a = new AccessMethod('TestAccessMethod2', 'protectedStatic');
+		$this->assertSame(5, $a->callArgs());
+	}
+
 	public function testPublicStatic2()
 	{
 		$a = new AccessMethod('TestAccessMethod', 'publicStatic');
+		$this->assertSame(6, $a->callArgs());
+	}
+
+	public function testPublicOnParentStatic2()
+	{
+		$a = new AccessMethod('TestAccessMethod2', 'publicStatic');
 		$this->assertSame(6, $a->callArgs());
 	}
 
@@ -84,9 +121,22 @@ class AccessMethod_callArgs_Test extends TestCase
 		$a->callArgs();
 	}
 
+	public function testNonStaticProtected()
+	{
+		$a = new AccessMethod('TestAccessMethod', '_protected');
+		$this->setExpectedException('Exception', 'Method TestAccessMethod::_protected() is not static.');
+		$a->callArgs();
+	}
+
 	public function testArgs1()
 	{
 		$a = new AccessMethod(new TestAccessMethod, 'args');
+		$this->assertSame(array(1,2,3), $a->callArgs(array(1,2,3)));
+	}
+
+	public function testArgsProtected1()
+	{
+		$a = new AccessMethod(new TestAccessMethod, 'argsProtected');
 		$this->assertSame(array(1,2,3), $a->callArgs(array(1,2,3)));
 	}
 
@@ -96,10 +146,23 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->assertSame(array(1,2,3,4), $a->callArgs(array(1,2,3,4)));
 	}
 
+	public function testArgsProtected2()
+	{
+		$a = new AccessMethod(new TestAccessMethod, 'argsProtected');
+		$this->assertSame(array(1,2,3,4), $a->callArgs(array(1,2,3,4)));
+	}
+
 	public function testArgsRequered()
 	{
 		$a = new AccessMethod(new TestAccessMethod, 'args');
 		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::args()');
+		$this->assertSame(6, $a->callArgs());
+	}
+
+	public function testArgsProtectedRequered()
+	{
+		$a = new AccessMethod(new TestAccessMethod, 'argsProtected');
+		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::argsProtected()');
 		$this->assertSame(6, $a->callArgs());
 	}
 }

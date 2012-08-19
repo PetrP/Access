@@ -3,6 +3,7 @@
 /**
  * @covers AccessProperty::asInstance
  * @covers AccessBase::asInstance
+ * @covers AccessAccessor
  */
 class AccessProperty_asInstance_Test extends TestCase
 {

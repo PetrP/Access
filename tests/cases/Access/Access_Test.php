@@ -51,6 +51,15 @@ class Access_Test extends TestCase
 		$this->assertSame('_private', $this->readAttribute($a, 'reflection')->getName());
 	}
 
+	public function testClassMethodProtected()
+	{
+		$a = Access('TestAccessMethod', '_protected');
+		$this->assertInstanceOf('AccessMethod', $a);
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $this->readAttribute($a, 'reflection')->getName());
+	}
+
 	public function testObjectMethod()
 	{
 		$o = new TestAccessMethod;
@@ -59,5 +68,15 @@ class Access_Test extends TestCase
 		$this->assertAttributeSame($o, 'instance', $a);
 		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
 		$this->assertSame('_private', $this->readAttribute($a, 'reflection')->getName());
+	}
+
+	public function testObjectMethodProtected()
+	{
+		$o = new TestAccessMethod;
+		$a = Access($o, '_protected');
+		$this->assertInstanceOf('AccessMethod', $a);
+		$this->assertAttributeSame($o, 'instance', $a);
+		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $this->readAttribute($a, 'reflection')->getName());
 	}
 }

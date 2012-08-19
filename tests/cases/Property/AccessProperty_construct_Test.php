@@ -3,6 +3,7 @@
 /**
  * @covers AccessProperty::__construct
  * @covers AccessBase::__construct
+ * @covers AccessAccessor
  */
 class AccessProperty_construct_Test extends TestCase
 {

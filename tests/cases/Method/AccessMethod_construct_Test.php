@@ -3,6 +3,7 @@
 /**
  * @covers AccessMethod::__construct
  * @covers AccessBase::__construct
+ * @covers AccessAccessor
  */
 class AccessMethod_construct_Test extends TestCase
 {
@@ -16,6 +17,16 @@ class AccessMethod_construct_Test extends TestCase
 		$this->assertSame('_private', $r->getName());
 	}
 
+	public function testClassProtected()
+	{
+		$a = new AccessMethod('TestAccessMethod', '_protected');
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $r->getName());
+	}
+
 	public function testObject()
 	{
 		$o = new TestAccessMethod;
@@ -25,6 +36,17 @@ class AccessMethod_construct_Test extends TestCase
 		$this->assertInstanceOf('ReflectionMethod', $r);
 		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
 		$this->assertSame('_private', $r->getName());
+	}
+
+	public function testObjectProtected()
+	{
+		$o = new TestAccessMethod;
+		$a = new AccessMethod($o, '_protected');
+		$this->assertAttributeSame($o, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $r->getName());
 	}
 
 	public function testClassOnParent()
@@ -37,6 +59,16 @@ class AccessMethod_construct_Test extends TestCase
 		$this->assertSame('_private', $r->getName());
 	}
 
+	public function testClassOnParentProtected()
+	{
+		$a = new AccessMethod('TestAccessMethod2', '_protected');
+		$this->assertAttributeSame(NULL, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $r->getName());
+	}
+
 	public function testObjectOnParent()
 	{
 		$o = new TestAccessMethod2;
@@ -46,6 +78,17 @@ class AccessMethod_construct_Test extends TestCase
 		$this->assertInstanceOf('ReflectionMethod', $r);
 		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
 		$this->assertSame('_private', $r->getName());
+	}
+
+	public function testObjectOnParentProtected()
+	{
+		$o = new TestAccessMethod2;
+		$a = new AccessMethod($o, '_protected');
+		$this->assertAttributeSame($o, 'instance', $a);
+		$r = $this->readAttribute($a, 'reflection');
+		$this->assertInstanceOf('ReflectionMethod', $r);
+		$this->assertSame('TestAccessMethod', $r->getDeclaringClass()->getName());
+		$this->assertSame('_protected', $r->getName());
 	}
 
 	public function testUnexistsClass()

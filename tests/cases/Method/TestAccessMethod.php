@@ -32,6 +32,11 @@ class TestAccessMethod extends Object
 		return func_get_args();
 	}
 
+	protected function argsProtected($a, $b, $c)
+	{
+		return func_get_args();
+	}
+
 	public $public;
 	private function setProperty($p)
 	{
