@@ -1,6 +1,6 @@
 <?php
 
-class TestAccessMethod extends Nette\Object
+class TestAccessMethod extends Object
 {
 	private function _private()
 	{

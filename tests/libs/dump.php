@@ -1,7 +1,5 @@
 <?php
 
-use \Nette\Diagnostics\Debugger;
-
 /** Dump */
 function d($var)
 {

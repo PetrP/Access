@@ -1,6 +1,6 @@
 <?php
 
-class TestAccessProperty extends Nette\Object
+class TestAccessProperty extends Object
 {
 	private $private = 1;
 	protected $protected = 2;

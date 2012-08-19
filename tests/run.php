@@ -1,16 +1,16 @@
 <?php
 
-require_once __DIR__ . '/libs/Nette/loader.php';
-require_once __DIR__ . '/libs/HttpPHPUnit/init.php';
+require_once dirname(__FILE__) . '/libs/Nette/loader.php';
+require_once dirname(__FILE__) . '/libs/HttpPHPUnit/init.php';
 
-callback(function () {
-
+function run()
+{
 	$http = new HttpPHPUnit;
 
-	require_once __DIR__ . '/boot.php';
+	require_once dirname(__FILE__) . '/boot.php';
 
-	$http->coverage(__DIR__ . '/../Access', __DIR__ . '/report');
+	$http->coverage(dirname(__FILE__) . '/../Access', dirname(__FILE__) . '/report');
 
-	$http->run(__DIR__ . '/cases');
-
-})->invoke();
+	$http->run(dirname(__FILE__) . '/cases');
+}
+callback('run')->invoke();
