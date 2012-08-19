@@ -1,0 +1,19 @@
+{
+		"name": "petrp/access",
+		"description": "Access - Tool for access to private and protected members of object. It's handy for unit tests.",
+		"homepage": "https://github.com/PetrP/Access",
+		"license": "BSD-3-Clause",
+		"authors": [
+			{
+				"name": "Petr Procházka",
+				"email": "prochazkapp@gmail.com",
+				"homepage": "http://petrp.cz"
+			}
+		],
+		"autoload": {
+			"files": ["Access/Init.php"]
+		},
+		"require": {
+			"php": ">=5.2.0"
+		}
+}

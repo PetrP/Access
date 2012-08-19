@@ -88,6 +88,10 @@ Each version is tagged and available on [download page](https://github.com/PetrP
 require_once __DIR__ . '/libs/Access/Init.php';
 ```
 
+### Composer & Packagist
+
+Access is available on [Packagist](http://packagist.org/packages/PetrP/Access), where you can get it via [Composer](http://getcomposer.org).
+
 
 Author
 -------
