@@ -6,10 +6,10 @@
  * @license "New" BSD License
  */
 
-require_once __DIR__ . '/Base.php';
-require_once __DIR__ . '/Class.php';
-require_once __DIR__ . '/Method.php';
-require_once __DIR__ . '/Property.php';
+require_once dirname(__FILE__) . '/Base.php';
+require_once dirname(__FILE__) . '/Class.php';
+require_once dirname(__FILE__) . '/Method.php';
+require_once dirname(__FILE__) . '/Property.php';
 
 /**
  * Access to method, property or whole class.
