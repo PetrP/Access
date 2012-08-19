@@ -1,13 +1,5 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use Nette\Object;
-use Nette\DirectoryNotFoundException;
-use Nette\Utils\Finder;
-use Exception;
-use PHP_CodeCoverage;
-
 /**
  * <pre>
  * 	require_once __DIR__ . '/libs/Nette/loader.php';
@@ -51,17 +43,18 @@ class Main extends Object
 	 */
 	public function __construct($phpUnitDir = NULL)
 	{
-		if (!$phpUnitDir) $phpUnitDir = __DIR__ . '/../../PHPUnit';
+		if (!$phpUnitDir) $phpUnitDir = dirname(__FILE__) . '/../../PHPUnit';
 		if (!is_dir($phpUnitDir)) throw new DirectoryNotFoundException($phpUnitDir);
 		set_include_path($phpUnitDir);
 		require_once 'PHPUnit/Autoload.php';
-		require_once __DIR__ . '/Command.php';
-		require_once __DIR__ . '/TemplateFactory.php';
-		require_once __DIR__ . '/../ResultPrinter/ResultPrinter.php';
-		require_once __DIR__ . '/../ResultPrinter/OpenInEditor.php';
-		require_once __DIR__ . '/../ResultPrinter/ResultPrinterTestCaseHelper.php';
-		require_once __DIR__ . '/../ResultPrinter/NetteDebug.php';
-		require_once __DIR__ . '/../StructureRenderer/StructureRenderer.php';
+		require_once dirname(__FILE__) . '/Php52Callback.php';
+		require_once dirname(__FILE__) . '/Command.php';
+		require_once dirname(__FILE__) . '/TemplateFactory.php';
+		require_once dirname(__FILE__) . '/../ResultPrinter/ResultPrinter.php';
+		require_once dirname(__FILE__) . '/../ResultPrinter/OpenInEditor.php';
+		require_once dirname(__FILE__) . '/../ResultPrinter/ResultPrinterTestCaseHelper.php';
+		require_once dirname(__FILE__) . '/../ResultPrinter/NetteDebug.php';
+		require_once dirname(__FILE__) . '/../StructureRenderer/StructureRenderer.php';
 
 		$this->testDir = isset($_GET['test']) ? $_GET['test'] : NULL;
 		if ($this->testDir AND $pos = strrpos($this->testDir, '::'))
@@ -84,7 +77,7 @@ class Main extends Object
 	 */
 	public function run($dir, $arg = '--no-globals-backup --strict')
 	{
-		$template = TemplateFactory::create(__DIR__ . '/layout.latte');
+		$template = TemplateFactory::create(dirname(__FILE__) . '/layout.latte');
 
 		$template->testDir = $this->testDir;
 		$template->method = $this->method;
@@ -92,9 +85,9 @@ class Main extends Object
 		$this->arg($arg);
 		$arg = $this->prepareArgs($dir);
 		$onBefore = $this->onBefore; $_this = $this;
-		$template->onBefore = function () use ($onBefore, $_this, $dir) {
+		$template->onBefore = create_function('', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('onBefore'=>$onBefore,'_this'=> $_this,'dir'=> $dir)).'], EXTR_REFS);
 			foreach ($onBefore as $cb) $cb($_this, $dir);
-		};
+		');
 
 		if ($this->run)
 		{
@@ -103,11 +96,11 @@ class Main extends Object
 			$printer->debug = (bool) $this->debug;
 			$printer->dir = $dir . DIRECTORY_SEPARATOR;
 
-			$template->run = function () use ($command, $printer, $arg) {
+			$template->run = create_function('', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('command'=>$command,'printer'=> $printer,'arg'=> $arg)).'], EXTR_REFS);
 				while (@ob_end_flush()); flush();
 				$command->run($arg, $printer);
 				$printer->render();
-			};
+			');
 		}
 		else
 		{
@@ -119,9 +112,9 @@ class Main extends Object
 		}
 
 		$onAfter = $this->onAfter;
-		$template->onAfter = function () use ($onAfter) {
+		$template->onAfter = create_function('', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('onAfter'=>$onAfter)).'], EXTR_REFS);
 			foreach ($onAfter as $cb) $cb();
-		};
+		');
 
 		$template->render();
 	}
@@ -141,9 +134,9 @@ class Main extends Object
 		{
 			if (!extension_loaded('xdebug'))
 			{
-				$this->onAfter['coverage'] = function () {
-					echo 'Coverage: The Xdebug extension is not loaded.';
-				};
+				$this->onAfter['coverage'] = create_function('', '
+					echo \'Coverage: The Xdebug extension is not loaded.\';
+				');
 			}
 			return $coverage;
 		}
@@ -159,17 +152,17 @@ class Main extends Object
 		$appDir = realpath($appDir);
 		$coverage->filter()->addDirectoryToWhitelist($appDir);
 		$lastModify = array();
-		$this->onBefore['coverage'] = function () use ($coverageDir, & $lastModify) {
-			foreach (Finder::findFiles('*.html')->from($coverageDir) as $file)
+		$this->onBefore['coverage'] = create_function('', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('coverageDir'=>$coverageDir, 'lastModify'=>& $lastModify)).'], EXTR_REFS);
+			foreach (Finder::findFiles(\'*.html\')->from($coverageDir) as $file)
 			{
 				$file = (string) $file;
 				$lastModify[$file] = filemtime($file);
 			}
-		};
-		$this->onAfter['coverage'] = function () use ($coverageDir, & $lastModify) {
-			$d = str_replace(DIRECTORY_SEPARATOR, '/', Main::dirDiff(dirname($_SERVER['SCRIPT_FILENAME']), $coverageDir));
-			echo "<a href='$d'>coverage</a>";
-			foreach (Finder::findFiles('*.html')->from($coverageDir) as $file)
+		');
+		$this->onAfter['coverage'] = create_function('', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('coverageDir'=>$coverageDir, 'lastModify'=>& $lastModify)).'], EXTR_REFS);
+			$d = str_replace(DIRECTORY_SEPARATOR, \'/\', Main::dirDiff(dirname($_SERVER[\'SCRIPT_FILENAME\']), $coverageDir));
+			echo "<a href=\'$d\'>coverage</a>";
+			foreach (Finder::findFiles(\'*.html\')->from($coverageDir) as $file)
 			{
 				$file = (string) $file;
 				if (isset($lastModify[$file]) AND $lastModify[$file] === filemtime($file))
@@ -177,7 +170,7 @@ class Main extends Object
 					unlink($file);
 				}
 			}
-		};
+		');
 		$this->arg('--coverage-html ' . $coverageDir);
 		return $coverage;
 	}
@@ -190,10 +183,10 @@ class Main extends Object
 	protected function structure()
 	{
 		$open = $this->testDir . '::' . $this->method;
-		$this->onBefore['structure'] = function ($foo, $dir) use ($open) {
+		$this->onBefore['structure'] = create_function('$foo, $dir', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('open'=>$open)).'], EXTR_REFS);
 			$structure = new StructureRenderer($dir, $open);
 			$structure->render();
-		};
+		');
 	}
 
 	/**

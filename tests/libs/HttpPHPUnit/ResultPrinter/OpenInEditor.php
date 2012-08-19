@@ -1,9 +1,5 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use Nette\Object;
-
 /**
  * @author Petr Prochazka
  */

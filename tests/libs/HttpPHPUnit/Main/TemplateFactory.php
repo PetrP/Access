@@ -1,20 +1,17 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use Nette\Application\UI\Control;
-use Exception;
-
 /**
  * @author Petr Prochazka
  */
-class TemplateFactory extends Control
+class TemplateFactory extends Object
 {
 	public static function create($file)
 	{
-		$control = new self;
-		$template = $control->getTemplate();
-		$template->control = NULL;
+		$template = new FileTemplate;
+		$template->onPrepareFilters[] = create_function('$template', '
+			$template->registerFilter(new LatteFilter);
+		');
+		$template->registerHelperLoader('TemplateHelpers::loader');
 		$template->setFile($file);
 		$template->basePath = self::getBasePath();
 		return $template;
@@ -22,9 +19,10 @@ class TemplateFactory extends Control
 
 	public static function getBasePath()
 	{
-		$dir = realpath(__DIR__ . '/..');
+		$dir = realpath(dirname(__FILE__) . '/..');
 		$documentRoot = realpath($_SERVER['DOCUMENT_ROOT']);
 		if (!$documentRoot) throw new Exception;
+		$documentRoot = rtrim($documentRoot, DIRECTORY_SEPARATOR);
 		$tmp = $documentRoot . DIRECTORY_SEPARATOR;
 		if ($documentRoot != $dir AND strncmp($dir, $tmp, strlen($tmp)) !== 0) throw new Exception;
 		return str_replace('\\', '/', substr($dir, strlen($documentRoot)));

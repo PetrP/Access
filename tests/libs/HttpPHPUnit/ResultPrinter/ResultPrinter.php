@@ -1,17 +1,5 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use Nette\Utils\Html;
-use PHPUnit_Util_TestDox_ResultPrinter;
-use PHPUnit_Framework_Test;
-use PHPUnit_Framework_AssertionFailedError;
-use Exception;
-use PHPUnit_Framework_TestCase;
-use PHPUnit_Runner_BaseTestRunner;
-use ReflectionClass;
-use PHPUnit_Util_Test;
-
 /**
  * @author Petr Prochazka
  */
@@ -165,11 +153,11 @@ class ResultPrinter extends PHPUnit_Util_TestDox_ResultPrinter
 		$state = 'unknown';
 
 		$count = $this->failed + $this->successful + $this->skipped + $this->incomplete;
-		$f = function ($c, $s = true) use ($count) {
-			if ($c === 1 AND $count === 1) return 'Test ' . ($s ? 'was ' : '');
-			if ($c === 1) return '1 test ' . ($s ? 'was ' : '');
-			return "$c tests " . ($s ? 'were ' : '');
-		};
+		$f = create_function('$c, $s = true', 'extract(Php52Callback::$vars['.Php52Callback::uses(array('count'=>$count)).'], EXTR_REFS);
+			if ($c === 1 AND $count === 1) return \'Test \' . ($s ? \'was \' : \'\');
+			if ($c === 1) return \'1 test \' . ($s ? \'was \' : \'\');
+			return "$c tests " . ($s ? \'were \' : \'\');
+		');
 
 		$summary = array();
 

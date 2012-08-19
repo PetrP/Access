@@ -1,11 +1,5 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use Nette\Object;
-use Exception;
-use ReflectionProperty;
-
 /**
  * @author Petr Prochazka
  */

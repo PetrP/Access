@@ -1,9 +1,5 @@
 <?php
 
-namespace HttpPHPUnit;
-
-use PHPUnit_TextUI_Command;
-
 /**
  * @author Petr Prochazka
  */

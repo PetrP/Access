@@ -50,7 +50,7 @@
 			} else {
 				this.hide();
 				if (callback)
-					this.each(callback);
+					this.each(callback);				
 			}
 		},
 		prepareBranches: function(settings) {
