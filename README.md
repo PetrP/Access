@@ -62,6 +62,10 @@ assert(11, $a->bar(1));
 
 Requirements
 ------------
+Library has no external dependencies.
+
+Fully works with PHP >= 5.3.2.
+
 AccessMethod require PHP 5.3.2 or later.
 AccessProperty require PHP 5.3.0 or later.
 
