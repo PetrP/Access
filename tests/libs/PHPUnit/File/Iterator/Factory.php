@@ -140,7 +140,7 @@ class File_Iterator_Factory
 		);
 
 		foreach ($iterator as $file) {
-			$file = $file->getRealPath();
+			$file = realpath($file->getFilename());
 
 			if ($file) {
 				$result[] = $file;

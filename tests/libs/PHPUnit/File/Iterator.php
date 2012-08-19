@@ -115,7 +115,7 @@ class File_Iterator extends FilterIterator
 	{
 		$current  = $this->getInnerIterator()->current();
 		$filename = $current->getFilename();
-		$realpath = $current->getRealPath();
+		$realpath = realpath($filename);
 
 		if ($this->basepath !== NULL) {
 			$realpath = str_replace($this->basepath, '', $realpath);
