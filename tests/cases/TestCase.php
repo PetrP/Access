@@ -3,6 +3,34 @@
 abstract class TestCase extends PHPUnit_Framework_TestCase
 {
 
+	private $markAsSkippedInTearDown = false;
+
+	public function checkPhpVersion($version, $message = NULL)
+	{
+		if (PHP_VERSION_ID < $version)
+		{
+			$this->markTestSkipped("PHP < {$version}" . ($message ? ": {$message}" : ''));
+		}
+	}
+
+	public function expectedExceptionBeforePhpVersion($version, $exceptionName, $exceptionMessage = '', $exceptionCode = 0)
+	{
+		if (PHP_VERSION_ID < $version)
+		{
+			$this->setExpectedException($exceptionName, $exceptionMessage, $exceptionCode);
+			$this->markAsSkippedInTearDown = "PHP < {$version}" . ($exceptionMessage ? ": {$exceptionMessage}" : '');
+		}
+	}
+
+	protected function tearDown()
+	{
+		parent::tearDown();
+		if ($this->markAsSkippedInTearDown)
+		{
+			$this->markTestSkipped($this->markAsSkippedInTearDown);
+		}
+	}
+
 	public function __call($name, $args)
 	{
 		return ObjectMixin::call($this, $name, $args);
