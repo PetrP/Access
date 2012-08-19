@@ -77,7 +77,7 @@ class StructureRenderer extends Object
 					}
 				}
 			}
-			$cursor->name = $file->getBasename();
+			$cursor->name = basename($file->getFilename());
 		}
 
 		$this->template->isAll = ($isAll AND $this->open !== false);

@@ -37,7 +37,7 @@ class ResultPrinter extends PHPUnit_Util_TestDox_ResultPrinter
 
 	public function __construct()
 	{
-		$this->file = tempnam(sys_get_temp_dir(), 'test');
+		$this->file = tempnam(function_exists('sys_get_temp_dir') ? sys_get_temp_dir() : NULL, 'test');
 		parent::__construct(fopen($this->file, 'w'));
 		$this->editor = new OpenInEditor;
 	}
