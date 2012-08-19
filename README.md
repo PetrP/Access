@@ -65,12 +65,16 @@ Requirements
 Library has no external dependencies.
 
 Fully works with PHP >= 5.3.2.
+PHP >= 5.2.0 is supported partially (see below).
 
 AccessMethod require PHP 5.3.2 or later.
 AccessProperty require PHP 5.3.0 or later.
 
-Limited support for php 5.2 will be soon.
-
+PHP >= 5.2.0 AND < 5.3.2 not supported:
+ * Final classes.
+ * Private methods.
+ * Read private static property.
+ * Write private property.
 
 Author
 -------

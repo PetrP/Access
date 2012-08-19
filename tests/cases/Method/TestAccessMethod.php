@@ -38,7 +38,7 @@ class TestAccessMethod extends Object
 	}
 
 	public $public;
-	private function setProperty($p)
+	protected function setProperty($p)
 	{
 		$this->public = $p;
 	}

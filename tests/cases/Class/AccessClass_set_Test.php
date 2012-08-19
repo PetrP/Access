@@ -2,12 +2,14 @@
 
 /**
  * @covers AccessClass::__set
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessClass_set_Test extends TestCase
 {
 	public function testPrivate()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to write to private property.');
 		$o = new TestAccessProperty;
 		$a = new AccessClass($o);
 		$a->private = 111;
@@ -16,6 +18,7 @@ class AccessClass_set_Test extends TestCase
 
 	public function testPrivateOnParent()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to write to private property.');
 		$o = new TestAccessProperty2;
 		$a = new AccessClass($o);
 		$a->private = 111;
@@ -56,6 +59,7 @@ class AccessClass_set_Test extends TestCase
 
 	public function testPrivateStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'static private property');
 		$o = new TestAccessProperty;
 		$a = new AccessClass($o);
 		$a->privateStatic = 444;
@@ -65,6 +69,7 @@ class AccessClass_set_Test extends TestCase
 
 	public function testPrivateOnParentStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'static private property');
 		$o = new TestAccessProperty2;
 		$a = new AccessClass($o);
 		$a->privateStatic = 444;
@@ -110,6 +115,7 @@ class AccessClass_set_Test extends TestCase
 
 	public function testPrivateStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'static private property');
 		$a = new AccessClass('TestAccessProperty');
 		$a->privateStatic = 444;
 		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');
@@ -118,6 +124,7 @@ class AccessClass_set_Test extends TestCase
 
 	public function testPrivateOnParentStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'static private property');
 		$a = new AccessClass('TestAccessProperty2');
 		$a->privateStatic = 444;
 		$this->assertAttributeSame(444, 'privateStatic', 'TestAccessProperty');

@@ -3,6 +3,7 @@
 /**
  * @covers AccessProperty::asInstance
  * @covers AccessBase::asInstance
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessProperty_asInstance_Test extends TestCase

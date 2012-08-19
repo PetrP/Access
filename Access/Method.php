@@ -33,7 +33,8 @@ class AccessMethod extends AccessBase
 	public function __construct($object, $method)
 	{
 		parent::__construct($object, new ReflectionMethod($object, $method));
-		$accessor = new AccessAccessor;
+		$ac = PHP_VERSION_ID < 50302 ? 'AccessAccessorPhp52' : 'AccessAccessor';
+		$accessor = new $ac;
 		$this->access = $accessor->accessMethod($this->reflection);
 	}
 

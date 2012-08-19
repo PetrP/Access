@@ -3,6 +3,7 @@
 /**
  * @covers AccessProperty::__construct
  * @covers AccessBase::__construct
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessProperty_construct_Test extends TestCase

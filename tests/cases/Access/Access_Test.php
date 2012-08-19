@@ -44,6 +44,7 @@ class Access_Test extends TestCase
 
 	public function testClassMethod()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = Access('TestAccessMethod', '_private');
 		$this->assertInstanceOf('AccessMethod', $a);
 		$this->assertAttributeSame(NULL, 'instance', $a);
@@ -62,6 +63,7 @@ class Access_Test extends TestCase
 
 	public function testObjectMethod()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$o = new TestAccessMethod;
 		$a = Access($o, '_private');
 		$this->assertInstanceOf('AccessMethod', $a);

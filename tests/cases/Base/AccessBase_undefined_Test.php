@@ -25,6 +25,7 @@ class AccessBase_undefined_Test extends TestCase
 
 	public function testCallStatic()
 	{
+		$this->checkPhpVersion(50300, '__callStatic');
 		$this->setExpectedException('Exception', 'Call undefined static method AccessProperty::name().');
 		$this->a->__callStatic('name', array());
 	}

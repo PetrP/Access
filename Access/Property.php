@@ -46,7 +46,8 @@ class AccessProperty extends AccessBase
 			if (!isset($r)) throw $e;
 		}
 		parent::__construct($object, $r);
-		$accessor = new AccessAccessor;
+		$ac = PHP_VERSION_ID < 50300 ? 'AccessAccessorPhp52' : 'AccessAccessor';
+		$accessor = new $ac;
 		$this->access = $accessor->accessProperty($this->reflection);
 	}
 

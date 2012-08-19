@@ -3,6 +3,7 @@
 /**
  * @covers AccessProperty::get
  * @covers AccessProperty::check
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessProperty_get_Test extends TestCase
@@ -33,12 +34,14 @@ class AccessProperty_get_Test extends TestCase
 
 	public function testPrivateStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to access static private property.');
 		$a = new AccessProperty(new TestAccessProperty, 'privateStatic');
 		$this->assertSame(4, $a->get());
 	}
 
 	public function testPrivateOnParentStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to access static private property.');
 		$a = new AccessProperty(new TestAccessProperty2, 'privateStatic');
 		$this->assertSame(4, $a->get());
 	}
@@ -69,12 +72,14 @@ class AccessProperty_get_Test extends TestCase
 
 	public function testPrivateStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to access static private property.');
 		$a = new AccessProperty('TestAccessProperty', 'privateStatic');
 		$this->assertSame(4, $a->get());
 	}
 
 	public function testPrivateOnParentStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessProperty needs PHP 5.3.0 or newer to access static private property.');
 		$a = new AccessProperty('TestAccessProperty2', 'privateStatic');
 		$this->assertSame(4, $a->get());
 	}

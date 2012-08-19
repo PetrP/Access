@@ -13,6 +13,8 @@
  *
  * AccessMethod PHP > 5.3.2
  * AccessProperty PHP > 5.3.0
+ *
+ * @see AccessAccessorPhp52
  */
 class AccessAccessor extends AccessBase
 {

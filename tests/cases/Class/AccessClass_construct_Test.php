@@ -2,6 +2,7 @@
 
 /**
  * @covers AccessClass::__construct
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessClass_construct_Test extends TestCase

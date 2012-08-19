@@ -2,18 +2,21 @@
 
 /**
  * @covers AccessMethod::callArgs
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessMethod_callArgs_Test extends TestCase
 {
 	public function testPrivate()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod, '_private');
 		$this->assertSame(1, $a->callArgs());
 	}
 
 	public function testPrivateOnParent()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod2, '_private');
 		$this->assertSame(1, $a->callArgs());
 	}
@@ -44,12 +47,14 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testPrivateStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod, 'privateStatic');
 		$this->assertSame(4, $a->callArgs());
 	}
 
 	public function testPrivateOnParentStatic1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod2, 'privateStatic');
 		$this->assertSame(4, $a->callArgs());
 	}
@@ -80,12 +85,14 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testPrivateStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod('TestAccessMethod', 'privateStatic');
 		$this->assertSame(4, $a->callArgs());
 	}
 
 	public function testPrivateOnParentStatic2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod('TestAccessMethod2', 'privateStatic');
 		$this->assertSame(4, $a->callArgs());
 	}
@@ -116,6 +123,7 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testNonStatic()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod('TestAccessMethod', '_private');
 		$this->setExpectedException('Exception', 'Method TestAccessMethod::_private() is not static.');
 		$a->callArgs();
@@ -130,6 +138,7 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testArgs1()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod, 'args');
 		$this->assertSame(array(1,2,3), $a->callArgs(array(1,2,3)));
 	}
@@ -142,6 +151,7 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testArgs2()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod, 'args');
 		$this->assertSame(array(1,2,3,4), $a->callArgs(array(1,2,3,4)));
 	}
@@ -154,6 +164,7 @@ class AccessMethod_callArgs_Test extends TestCase
 
 	public function testArgsRequered()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod(new TestAccessMethod, 'args');
 		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::args()');
 		$this->assertSame(6, $a->callArgs());

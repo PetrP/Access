@@ -17,3 +17,14 @@ $r->addDirectory(dirname(__FILE__) . '/libs');
 $r->addDirectory(dirname(__FILE__) . '/cases');
 $r->register();
 unset($r, $storage);
+
+if (PHP_VERSION_ID < 50300)
+{
+	// aby fungovalo @cover v php 52, kde AccessAccessor neni.
+	class AccessAccessor {}
+}
+else
+{
+	// aby fungovalo @cover v php 53, kde AccessAccessorPhp52 neni.
+	class AccessAccessorPhp52 {}
+}

@@ -3,12 +3,14 @@
 /**
  * @covers AccessMethod::__construct
  * @covers AccessBase::__construct
+ * @covers AccessAccessorPhp52
  * @covers AccessAccessor
  */
 class AccessMethod_construct_Test extends TestCase
 {
 	public function testClass()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod('TestAccessMethod', '_private');
 		$this->assertAttributeSame(NULL, 'instance', $a);
 		$r = $this->readAttribute($a, 'reflection');
@@ -29,6 +31,7 @@ class AccessMethod_construct_Test extends TestCase
 
 	public function testObject()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$o = new TestAccessMethod;
 		$a = new AccessMethod($o, '_private');
 		$this->assertAttributeSame($o, 'instance', $a);
@@ -51,6 +54,7 @@ class AccessMethod_construct_Test extends TestCase
 
 	public function testClassOnParent()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = new AccessMethod('TestAccessMethod2', '_private');
 		$this->assertAttributeSame(NULL, 'instance', $a);
 		$r = $this->readAttribute($a, 'reflection');
@@ -71,6 +75,7 @@ class AccessMethod_construct_Test extends TestCase
 
 	public function testObjectOnParent()
 	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$o = new TestAccessMethod2;
 		$a = new AccessMethod($o, '_private');
 		$this->assertAttributeSame($o, 'instance', $a);

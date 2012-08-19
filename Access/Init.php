@@ -21,6 +21,10 @@ if (PHP_VERSION_ID >= 50300)
 {
 	require_once dirname(__FILE__) . '/Accessor.php';
 }
+if (PHP_VERSION_ID <= 50302)
+{
+	require_once dirname(__FILE__) . '/AccessorPhp52.php';
+}
 
 /**
  * Access to method, property or whole class.
