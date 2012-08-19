@@ -76,6 +76,19 @@ PHP >= 5.2.0 AND < 5.3.2 not supported:
  * Read private static property.
  * Write private property.
 
+
+Instalations
+------------
+
+### GitHub
+
+Each version is tagged and available on [download page](https://github.com/PetrP/Access/tags).
+
+```php
+require_once __DIR__ . '/libs/Access/Init.php';
+```
+
+
 Author
 -------
 Petr Procházka
