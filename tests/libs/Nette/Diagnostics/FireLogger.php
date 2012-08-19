@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Diagnostics
  */
-
-namespace Nette\Diagnostics;
-
-use Nette;
 
 
 
@@ -20,8 +17,9 @@ use Nette;
  *
  * @see http://firelogger.binaryage.com
  * @author     David Grudl
+ * @package Nette\Diagnostics
  */
-class FireLogger extends Nette\Object
+class FireLogger extends Object
 {
 	const DEBUG = 'debug',
 		INFO = 'info',
@@ -59,24 +57,24 @@ class FireLogger extends Nette\Object
 			$item['template'] = array_shift($args);
 		}
 
-		if (isset($args[0]) && $args[0] instanceof \Exception) {
+		if (isset($args[0]) && $args[0] instanceof Exception) {
 			$e = array_shift($args);
 			$trace = $e->getTrace();
-			if (isset($trace[0]['class']) && $trace[0]['class'] === 'Nette\Diagnostics\Debugger'
+			if (isset($trace[0]['class']) && $trace[0]['class'] === 'Debugger'
 				&& ($trace[0]['function'] === '_shutdownHandler' || $trace[0]['function'] === '_errorHandler')
 			) {
 				unset($trace[0]);
 			}
 
 			$file = str_replace(dirname(dirname(dirname($e->getFile()))), "\xE2\x80\xA6", $e->getFile());
-			$item['template'] = ($e instanceof \ErrorException ? '' : get_class($e) . ': ')
+			$item['template'] = ($e instanceof ErrorException ? '' : get_class($e) . ': ')
 				. $e->getMessage() . ($e->getCode() ? ' #' . $e->getCode() : '') . ' in ' . $file . ':' . $e->getLine();
 			$item['pathname'] = $e->getFile();
 			$item['lineno'] = $e->getLine();
 
 		} else {
 			$trace = debug_backtrace();
-			if (isset($trace[1]['class']) && $trace[1]['class'] === 'Nette\Diagnostics\Debugger'
+			if (isset($trace[1]['class']) && $trace[1]['class'] === 'Debugger'
 				&& ($trace[1]['function'] === 'fireLog')
 			) {
 				unset($trace[0]);
@@ -130,7 +128,7 @@ class FireLogger extends Nette\Object
 			if (Debugger::$maxLen && strlen($var) > Debugger::$maxLen) {
 				$var = substr($var, 0, Debugger::$maxLen) . " \xE2\x80\xA6 ";
 			}
-			return Nette\Utils\Strings::fixEncoding($var);
+			return Strings::fixEncoding($var);
 
 		} elseif (is_array($var)) {
 			static $marker;

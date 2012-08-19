@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette,
-	Nette\Utils\Html;
 
 
 
@@ -22,15 +18,16 @@ use Nette,
  * @author     David Grudl
  *
  * @property   array $items
- * @property-read Nette\Utils\Html $separatorPrototype
- * @property-read Nette\Utils\Html $containerPrototype
+ * @property-read Html $separatorPrototype
+ * @property-read Html $containerPrototype
+ * @package Nette\Forms\Controls
  */
-class RadioList extends BaseControl
+class RadioList extends FormControl
 {
-	/** @var Nette\Utils\Html  separator element template */
+	/** @var Html  separator element template */
 	protected $separator;
 
-	/** @var Nette\Utils\Html  container element template */
+	/** @var Html  container element template */
 	protected $container;
 
 	/** @var array */
@@ -104,7 +101,7 @@ class RadioList extends BaseControl
 
 	/**
 	 * Returns separator HTML element template.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	final public function getSeparatorPrototype()
 	{
@@ -115,7 +112,7 @@ class RadioList extends BaseControl
 
 	/**
 	 * Returns container HTML element template.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	final public function getContainerPrototype()
 	{
@@ -127,7 +124,7 @@ class RadioList extends BaseControl
 	/**
 	 * Generates control's HTML element.
 	 * @param  mixed
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	public function getControl($key = NULL)
 	{
@@ -147,7 +144,7 @@ class RadioList extends BaseControl
 
 		foreach ($this->items as $k => $val) {
 			$counter++;
-			if ($key !== NULL && $key != $k) { // intentionally ==
+			if ($key !== NULL && (string) $key !== (string) $k) {
 				continue;
 			}
 
@@ -162,7 +159,7 @@ class RadioList extends BaseControl
 			}
 
 			if ($key !== NULL) {
-				return (string) $control . (string) $label;
+				return Html::el()->add($control)->add($label);
 			}
 
 			$container->add((string) $control . (string) $label . $separator);

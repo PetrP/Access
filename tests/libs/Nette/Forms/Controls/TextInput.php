@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -19,6 +16,8 @@ use Nette;
  * Single line text input control.
  *
  * @author     David Grudl
+ * @property-write $type
+ * @package Nette\Forms\Controls
  */
 class TextInput extends TextBase
 {
@@ -47,10 +46,10 @@ class TextInput extends TextBase
 	 */
 	public function sanitize($value)
 	{
-		if ($this->control->maxlength && Nette\Utils\Strings::length($value) > $this->control->maxlength) {
-			$value = iconv_substr($value, 0, $this->control->maxlength, 'UTF-8');
+		if ($this->control->maxlength && Strings::length($value) > $this->control->maxlength) {
+			$value = Strings::substring($value, 0, $this->control->maxlength);
 		}
-		return Nette\Utils\Strings::trim(strtr($value, "\r\n", '  '));
+		return Strings::trim(strtr($value, "\r\n", '  '));
 	}
 
 
@@ -58,7 +57,7 @@ class TextInput extends TextBase
 	/**
 	 * Changes control's type attribute.
 	 * @param  string
-	 * @return BaseControl  provides a fluent interface
+	 * @return FormControl  provides a fluent interface
 	 */
 	public function setType($type)
 	{
@@ -79,18 +78,18 @@ class TextInput extends TextBase
 
 	/**
 	 * Generates control's HTML element.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	public function getControl()
 	{
 		$control = parent::getControl();
 		foreach ($this->getRules() as $rule) {
-			if ($rule->isNegative || $rule->type !== Nette\Forms\Rule::VALIDATOR) {
+			if ($rule->isNegative || $rule->type !== Rule::VALIDATOR) {
 
-			} elseif ($rule->operation === Nette\Forms\Form::RANGE && $control->type !== 'text') {
+			} elseif ($rule->operation === Form::RANGE && $control->type !== 'text') {
 				list($control->min, $control->max) = $rule->arg;
 
-			} elseif ($rule->operation === Nette\Forms\Form::PATTERN) {
+			} elseif ($rule->operation === Form::PATTERN) {
 				$control->pattern = $rule->arg;
 			}
 		}

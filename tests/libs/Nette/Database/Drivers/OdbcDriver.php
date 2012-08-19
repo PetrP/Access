@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Database\Drivers
  */
-
-namespace Nette\Database\Drivers;
-
-use Nette;
 
 
 
@@ -19,18 +16,16 @@ use Nette;
  * Supplemental ODBC database driver.
  *
  * @author     David Grudl
+ * @package Nette\Database\Drivers
  */
-class OdbcDriver extends Nette\Object implements Nette\Database\ISupplementalDriver
+class OdbcDriver extends Object implements ISupplementalDriver
 {
-	/** @var array */
-	public $supports = array('meta' => TRUE);
-
-	/** @var Nette\Database\Connection */
+	/** @var Connection */
 	private $connection;
 
 
 
-	public function __construct(Nette\Database\Connection $connection, array $options)
+	public function __construct(Connection $connection, array $options)
 	{
 		$this->connection = $connection;
 	}
@@ -54,7 +49,7 @@ class OdbcDriver extends Nette\Object implements Nette\Database\ISupplementalDri
 	/**
 	 * Formats date-time for use in a SQL statement.
 	 */
-	public function formatDateTime(\DateTime $value)
+	public function formatDateTime(DateTime $value)
 	{
 		return $value->format("#m/d/Y H:i:s#");
 	}
@@ -83,7 +78,7 @@ class OdbcDriver extends Nette\Object implements Nette\Database\ISupplementalDri
 		}
 
 		if ($offset) {
-			throw new Nette\InvalidArgumentException('Offset is not implemented in driver odbc.');
+			throw new InvalidArgumentException('Offset is not implemented in driver odbc.');
 		}
 	}
 
@@ -95,6 +90,60 @@ class OdbcDriver extends Nette\Object implements Nette\Database\ISupplementalDri
 	public function normalizeRow($row, $statement)
 	{
 		return $row;
+	}
+
+
+
+	/********************* reflection ****************d*g**/
+
+
+
+	/**
+	 * Returns list of tables.
+	 */
+	public function getTables()
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * Returns metadata for all columns in a table.
+	 */
+	public function getColumns($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * Returns metadata for all indexes in a table.
+	 */
+	public function getIndexes($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * Returns metadata for all foreign keys in a table.
+	 */
+	public function getForeignKeys($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * @return bool
+	 */
+	public function isSupported($item)
+	{
+		return $item === self::META;
 	}
 
 }

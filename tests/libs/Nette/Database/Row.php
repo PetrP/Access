@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Database
  */
-
-namespace Nette\Database;
-
-use Nette;
 
 
 
@@ -19,11 +16,12 @@ use Nette;
  * Represents a single table row.
  *
  * @author     David Grudl
+ * @package Nette\Database
  */
-class Row extends Nette\ArrayHash
+class Row extends ArrayHash
 {
 
-	public function __construct($statement)
+	public function __construct(Statement $statement)
 	{
 		$statement->normalizeRow($this);
 	}

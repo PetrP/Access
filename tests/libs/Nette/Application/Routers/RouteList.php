@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Routers
  */
-
-namespace Nette\Application\Routers;
-
-use Nette;
 
 
 
@@ -19,8 +16,10 @@ use Nette;
  * The router broker.
  *
  * @author     David Grudl
+ * @property-read string $module
+ * @package Nette\Application\Routers
  */
-class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
+class RouteList extends ArrayList implements IRouter
 {
 	/** @var array */
 	private $cachedRoutes;
@@ -39,10 +38,10 @@ class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 
 	/**
 	 * Maps HTTP request to a Request object.
-	 * @param  Nette\Http\IRequest
-	 * @return Nette\Application\Request|NULL
+	 * @param  IHttpRequest
+	 * @return PresenterRequest|NULL
 	 */
-	public function match(Nette\Http\IRequest $httpRequest)
+	public function match(IHttpRequest $httpRequest)
 	{
 		foreach ($this as $route) {
 			$appRequest = $route->match($httpRequest);
@@ -58,11 +57,11 @@ class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 
 	/**
 	 * Constructs absolute URL from Request object.
-	 * @param  Nette\Application\Request
-	 * @param  Nette\Http\Url
+	 * @param  PresenterRequest
+	 * @param  Url
 	 * @return string|NULL
 	 */
-	public function constructUrl(Nette\Application\Request $appRequest, Nette\Http\Url $refUrl)
+	public function constructUrl(PresenterRequest $appRequest, Url $refUrl)
 	{
 		if ($this->cachedRoutes === NULL) {
 			$routes = array();
@@ -121,15 +120,25 @@ class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 	/**
 	 * Adds the router.
 	 * @param  mixed
-	 * @param  Nette\Application\IRouter
+	 * @param  IRouter
 	 * @return void
 	 */
 	public function offsetSet($index, $route)
 	{
-		if (!$route instanceof Nette\Application\IRouter) {
-			throw new Nette\InvalidArgumentException("Argument must be IRouter descendant.");
+		if (!$route instanceof IRouter) {
+			throw new InvalidArgumentException("Argument must be IRouter descendant.");
 		}
 		parent::offsetSet($index, $route);
+	}
+
+
+
+	/**
+	 * @return string
+	 */
+	public function getModule()
+	{
+		return $this->module;
 	}
 
 }

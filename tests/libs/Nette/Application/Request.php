@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application
  */
-
-namespace Nette\Application;
-
-use Nette;
 
 
 
@@ -21,11 +18,13 @@ use Nette;
  * @author     David Grudl
  *
  * @property   string $presenterName
- * @property   array $params
+ * @property   array $parameters
  * @property   array $post
  * @property   array $files
+ * @property   string $method
+ * @package Nette\Application
  */
-final class Request extends Nette\FreezableObject
+final class PresenterRequest extends FreezableObject
 {
 	/** method */
 	const FORWARD = 'FORWARD';
@@ -62,6 +61,7 @@ final class Request extends Nette\FreezableObject
 	 * @param  array   variables provided to the presenter usually via URL
 	 * @param  array   variables provided to the presenter via POST
 	 * @param  array   all uploaded files
+	 * @param  array   flags
 	 */
 	public function __construct($name, $method, array $params, array $post = array(), array $files = array(), array $flags = array())
 	{
@@ -78,7 +78,7 @@ final class Request extends Nette\FreezableObject
 	/**
 	 * Sets the presenter name.
 	 * @param  string
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
 	public function setPresenterName($name)
 	{
@@ -103,9 +103,9 @@ final class Request extends Nette\FreezableObject
 	/**
 	 * Sets variables provided to the presenter.
 	 * @param  array
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
-	public function setParams(array $params)
+	public function setParameters(array $params)
 	{
 		$this->updating();
 		$this->params = $params;
@@ -118,9 +118,27 @@ final class Request extends Nette\FreezableObject
 	 * Returns all variables provided to the presenter (usually via URL).
 	 * @return array
 	 */
-	public function getParams()
+	public function getParameters()
 	{
 		return $this->params;
+	}
+
+
+
+	/** @deprecated */
+	function setParams(array $params)
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use setParameters() instead.', E_USER_WARNING);
+		return $this->setParameters($params);
+	}
+
+
+
+	/** @deprecated */
+	function getParams()
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use getParameters() instead.', E_USER_WARNING);
+		return $this->getParameters();
 	}
 
 
@@ -128,7 +146,7 @@ final class Request extends Nette\FreezableObject
 	/**
 	 * Sets variables provided to the presenter via POST.
 	 * @param  array
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
 	public function setPost(array $params)
 	{
@@ -153,7 +171,7 @@ final class Request extends Nette\FreezableObject
 	/**
 	 * Sets all uploaded files.
 	 * @param  array
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
 	public function setFiles(array $files)
 	{
@@ -178,7 +196,7 @@ final class Request extends Nette\FreezableObject
 	/**
 	 * Sets the method.
 	 * @param  string
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
 	public function setMethod($method)
 	{
@@ -226,7 +244,7 @@ final class Request extends Nette\FreezableObject
 	 * Sets the flag.
 	 * @param  string
 	 * @param  bool
-	 * @return Request  provides a fluent interface
+	 * @return PresenterRequest  provides a fluent interface
 	 */
 	public function setFlag($flag, $value = TRUE)
 	{

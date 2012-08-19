@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Utils
  */
-
-namespace Nette\Utils;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * JSON encoder and decoder.
  *
  * @author     David Grudl
+ * @package Nette\Utils
  */
 final class Json
 {
@@ -39,7 +37,7 @@ final class Json
 	 */
 	final public function __construct()
 	{
-		throw new Nette\StaticClassException;
+		throw new StaticClassException;
 	}
 
 
@@ -51,7 +49,7 @@ final class Json
 	 */
 	public static function encode($value)
 	{
-		Nette\Diagnostics\Debugger::tryError();
+		Debugger::tryError();
 		if (function_exists('ini_set')) {
 			$old = ini_set('display_errors', 0); // needed to receive 'Invalid UTF-8 sequence' error
 			$json = json_encode($value);
@@ -59,7 +57,7 @@ final class Json
 		} else {
 			$json = json_encode($value);
 		}
-		if (Nette\Diagnostics\Debugger::catchError($e)) { // needed to receive 'recursion detected' error
+		if (Debugger::catchError($e)) { // needed to receive 'recursion detected' error
 			throw new JsonException($e->getMessage());
 		}
 		return $json;
@@ -90,7 +88,8 @@ final class Json
 
 /**
  * The exception that indicates error of JSON encoding/decoding.
+ * @package Nette\Utils
  */
-class JsonException extends \Exception
+class JsonException extends Exception
 {
 }

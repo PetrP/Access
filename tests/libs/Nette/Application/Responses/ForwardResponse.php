@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Responses
  */
-
-namespace Nette\Application\Responses;
-
-use Nette;
 
 
 
@@ -19,18 +16,21 @@ use Nette;
  * Forwards to new request.
  *
  * @author     David Grudl
+ *
+ * @property-read PresenterRequest $request
+ * @package Nette\Application\Responses
  */
-class ForwardResponse extends Nette\Object implements Nette\Application\IResponse
+class ForwardResponse extends Object implements IPresenterResponse
 {
-	/** @var Nette\Application\Request */
+	/** @var PresenterRequest */
 	private $request;
 
 
 
 	/**
-	 * @param  Nette\Application\Request  new request
+	 * @param  PresenterRequest  new request
 	 */
-	public function __construct(Nette\Application\Request $request)
+	public function __construct(PresenterRequest $request)
 	{
 		$this->request = $request;
 	}
@@ -38,7 +38,7 @@ class ForwardResponse extends Nette\Object implements Nette\Application\IRespons
 
 
 	/**
-	 * @return Nette\Application\Request
+	 * @return PresenterRequest
 	 */
 	final public function getRequest()
 	{
@@ -51,7 +51,7 @@ class ForwardResponse extends Nette\Object implements Nette\Application\IRespons
 	 * Sends response to output.
 	 * @return void
 	 */
-	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+	public function send(IHttpRequest $httpRequest, IHttpResponse $httpResponse)
 	{
 	}
 

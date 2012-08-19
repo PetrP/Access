@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Iterators
  */
-
-namespace Nette\Iterators;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Instance iterator filter.
  *
  * @author     David Grudl
+ * @package Nette\Iterators
  */
-class InstanceFilter extends \FilterIterator implements \Countable
+class InstanceFilterIterator extends FilterIterator implements Countable
 {
 	/** @var string */
 	private $type;
@@ -28,10 +26,10 @@ class InstanceFilter extends \FilterIterator implements \Countable
 
 	/**
 	 * Constructs a filter around another iterator.
-	 * @param  Nette\Iterator
+	 * @param  Iterator
 	 * @param  string  class/interface name
 	 */
-	public function __construct(\Iterator $iterator, $type)
+	public function __construct(Iterator $iterator, $type)
 	{
 		$this->type = $type;
 		parent::__construct($iterator);

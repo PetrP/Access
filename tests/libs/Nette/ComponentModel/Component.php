@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\ComponentModel
  */
-
-namespace Nette\ComponentModel;
-
-use Nette;
 
 
 
@@ -23,11 +20,12 @@ use Nette;
  * @author     David Grudl
  *
  * @property-read string $name
- * @property IContainer $parent
+ * @property-read IComponentContainer|NULL $parent
+ * @package Nette\ComponentModel
  */
-abstract class Component extends Nette\Object implements IComponent
+abstract class Component extends Object implements IComponent
 {
-	/** @var IContainer */
+	/** @var IComponentContainer */
 	private $parent;
 
 	/** @var string */
@@ -40,7 +38,7 @@ abstract class Component extends Nette\Object implements IComponent
 
 	/**
 	 */
-	public function __construct(IContainer $parent = NULL, $name = NULL)
+	public function __construct(IComponentContainer $parent = NULL, $name = NULL)
 	{
 		if ($parent !== NULL) {
 			$parent->addComponent($this, $name);
@@ -85,7 +83,7 @@ abstract class Component extends Nette\Object implements IComponent
 		}
 
 		if ($need && $this->monitors[$type][0] === NULL) {
-			throw new Nette\InvalidStateException("Component '$this->name' is not attached to '$type'.");
+			throw new InvalidStateException("Component '$this->name' is not attached to '$type'.");
 		}
 
 		return $this->monitors[$type][0];
@@ -177,7 +175,7 @@ abstract class Component extends Nette\Object implements IComponent
 
 	/**
 	 * Returns the container if any.
-	 * @return IContainer|NULL
+	 * @return IComponentContainer|NULL
 	 */
 	final public function getParent()
 	{
@@ -189,13 +187,13 @@ abstract class Component extends Nette\Object implements IComponent
 	/**
 	 * Sets the parent of this component. This method is managed by containers and should
 	 * not be called by applications
-	 * @param  IContainer  New parent or null if this component is being removed from a parent
+	 * @param  IComponentContainer  New parent or null if this component is being removed from a parent
 	 * @param  string
 	 * @return Component  provides a fluent interface
-	 * @throws Nette\InvalidStateException
+	 * @throws InvalidStateException
 	 * @internal
 	 */
-	public function setParent(IContainer $parent = NULL, $name = NULL)
+	public function setParent(IComponentContainer $parent = NULL, $name = NULL)
 	{
 		if ($parent === NULL && $this->parent === NULL && $name !== NULL) {
 			$this->name = $name; // just rename
@@ -207,7 +205,7 @@ abstract class Component extends Nette\Object implements IComponent
 
 		// A component cannot be given a parent if it already has a parent.
 		if ($this->parent !== NULL && $parent !== NULL) {
-			throw new Nette\InvalidStateException("Component '$this->name' already has a parent.");
+			throw new InvalidStateException("Component '$this->name' already has a parent.");
 		}
 
 		// remove from parent?
@@ -232,12 +230,12 @@ abstract class Component extends Nette\Object implements IComponent
 
 	/**
 	 * Is called by a component when it is about to be set new parent. Descendant can
-	 * override this method to disallow a parent change by throwing an Nette\InvalidStateException
-	 * @param  IContainer
+	 * override this method to disallow a parent change by throwing an InvalidStateException
+	 * @param  IComponentContainer
 	 * @return void
-	 * @throws Nette\InvalidStateException
+	 * @throws InvalidStateException
 	 */
-	protected function validateParent(IContainer $parent)
+	protected function validateParent(IComponentContainer $parent)
 	{
 	}
 
@@ -252,7 +250,7 @@ abstract class Component extends Nette\Object implements IComponent
 	 */
 	private function refreshMonitors($depth, & $missing = NULL, & $listeners = array())
 	{
-		if ($this instanceof IContainer) {
+		if ($this instanceof IComponentContainer) {
 			foreach ($this->getComponents() as $component) {
 				if ($component instanceof Component) {
 					$component->refreshMonitors($depth + 1, $missing, $listeners);
@@ -317,7 +315,7 @@ abstract class Component extends Nette\Object implements IComponent
 		if ($this->parent === NULL) {
 			return;
 
-		} elseif ($this->parent instanceof Container) {
+		} elseif ($this->parent instanceof ComponentContainer) {
 			$this->parent = $this->parent->_isCloning();
 			if ($this->parent === NULL) { // not cloning
 				$this->refreshMonitors(0);
@@ -332,11 +330,21 @@ abstract class Component extends Nette\Object implements IComponent
 
 
 	/**
+	 * Prevents serialization.
+	 */
+	final public function __sleep()
+	{
+		throw new NotImplementedException('Object serialization is not supported by class ' . get_class($this));
+	}
+
+
+
+	/**
 	 * Prevents unserialization.
 	 */
 	final public function __wakeup()
 	{
-		throw new Nette\NotImplementedException;
+		throw new NotImplementedException('Object unserialization is not supported by class ' . get_class($this));
 	}
 
 }

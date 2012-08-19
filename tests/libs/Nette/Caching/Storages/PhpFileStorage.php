@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Caching\Storages
  */
-
-namespace Nette\Caching\Storages;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * PHP files cache storage.
  *
  * @author     David Grudl
+ * @package Nette\Caching\Storages
  */
 class PhpFileStorage extends FileStorage
 {
@@ -51,7 +49,7 @@ class PhpFileStorage extends FileStorage
 		return parent::getCacheFile(substr_replace(
 			$key,
 			trim(strtr($this->hint, '\\/@', '.._'), '.') . '-',
-			strpos($key, Nette\Caching\Cache::NAMESPACE_SEPARATOR) + 1,
+			strpos($key, Cache::NAMESPACE_SEPARATOR) + 1,
 			0
 		)) . '.php';
 	}

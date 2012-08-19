@@ -3,30 +3,29 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\DI
  */
-
-namespace Nette\DI;
-
-use Nette;
 
 
 
 /**
  * Service not found exception.
+ * @package Nette\DI
  */
-class MissingServiceException extends Nette\InvalidStateException
+class MissingServiceException extends InvalidStateException
 {
 }
 
 
 
 /**
- * Ambiguous service resolution exception.
+ * Service creation exception.
+ * @package Nette\DI
  */
-class AmbiguousServiceException extends Nette\InvalidStateException
+class ServiceCreationException extends InvalidStateException
 {
 }

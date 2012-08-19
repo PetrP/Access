@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette,
-	Nette\ObjectMixin;
 
 
 
@@ -20,8 +16,9 @@ use Nette,
  * Reports information about a extension.
  *
  * @author     David Grudl
+ * @package Nette\Reflection
  */
-class Extension extends \ReflectionExtension
+class ExtensionReflection extends ReflectionExtension
 {
 
 	public function __toString()
@@ -39,7 +36,7 @@ class Extension extends \ReflectionExtension
 	{
 		$res = array();
 		foreach (parent::getClassNames() as $val) {
-			$res[$val] = new ClassType($val);
+			$res[$val] = new ClassReflection($val);
 		}
 		return $res;
 	}
@@ -49,23 +46,23 @@ class Extension extends \ReflectionExtension
 	public function getFunctions()
 	{
 		foreach ($res = parent::getFunctions() as $key => $val) {
-			$res[$key] = new GlobalFunction($key);
+			$res[$key] = new FunctionReflection($key);
 		}
 		return $res;
 	}
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 

@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette
  */
-
-namespace Nette;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Provides objects to work as array.
  *
  * @author     David Grudl
+ * @package Nette
  */
-class ArrayHash implements \ArrayAccess, \Countable, \IteratorAggregate
+class ArrayHash extends stdClass implements ArrayAccess, Countable, IteratorAggregate
 {
 
 	/**
@@ -30,10 +28,10 @@ class ArrayHash implements \ArrayAccess, \Countable, \IteratorAggregate
 	 */
 	public static function from($arr, $recursive = TRUE)
 	{
-		$obj = new static;
+		$obj = new self;
 		foreach ($arr as $key => $value) {
 			if ($recursive && is_array($value)) {
-				$obj->$key = static::from($value, TRUE);
+				$obj->$key = self::from($value, TRUE);
 			} else {
 				$obj->$key = $value;
 			}
@@ -45,11 +43,11 @@ class ArrayHash implements \ArrayAccess, \Countable, \IteratorAggregate
 
 	/**
 	 * Returns an iterator over all items.
-	 * @return \RecursiveArrayIterator
+	 * @return RecursiveArrayIterator
 	 */
 	public function getIterator()
 	{
-		return new \RecursiveArrayIterator($this);
+		return new RecursiveArrayIterator($this);
 	}
 
 

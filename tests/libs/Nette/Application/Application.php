@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application
  */
-
-namespace Nette\Application;
-
-use Nette;
 
 
 
@@ -19,8 +16,14 @@ use Nette;
  * Front Controller.
  *
  * @author     David Grudl
+ *
+ * @property-read array $requests
+ * @property-read IPresenter $presenter
+ * @property-read IRouter $router
+ * @property-read IPresenterFactory $presenterFactory
+ * @package Nette\Application
  */
-class Application extends Nette\Object
+class Application extends Object
 {
 	/** @var int */
 	public static $maxLoop = 20;
@@ -34,7 +37,7 @@ class Application extends Nette\Object
 	/** @var array of function(Application $sender); Occurs before the application loads presenter */
 	public $onStartup;
 
-	/** @var array of function(Application $sender, \Exception $e = NULL); Occurs before the application shuts down */
+	/** @var array of function(Application $sender, Exception $e = NULL); Occurs before the application shuts down */
 	public $onShutdown;
 
 	/** @var array of function(Application $sender, Request $request); Occurs when a new request is ready for dispatch */
@@ -43,26 +46,38 @@ class Application extends Nette\Object
 	/** @var array of function(Application $sender, IResponse $response); Occurs when a new response is received */
 	public $onResponse;
 
-	/** @var array of function(Application $sender, \Exception $e); Occurs when an unhandled exception occurs in the application */
+	/** @var array of function(Application $sender, Exception $e); Occurs when an unhandled exception occurs in the application */
 	public $onError;
 
-	/** @var array of string */
-	public $allowedMethods = array('GET', 'POST', 'HEAD', 'PUT', 'DELETE');
+	/** @deprecated */
+	public $allowedMethods;
 
-	/** @var array of Request */
+	/** @var PresenterRequest[] */
 	private $requests = array();
 
 	/** @var IPresenter */
 	private $presenter;
 
-	/** @var Nette\DI\IContainer */
-	private $context;
+	/** @var IHttpRequest */
+	private $httpRequest;
+
+	/** @var IHttpResponse */
+	private $httpResponse;
+
+	/** @var IPresenterFactory */
+	private $presenterFactory;
+
+	/** @var IRouter */
+	private $router;
 
 
 
-	public function __construct(Nette\DI\IContainer $context)
+	public function __construct(IPresenterFactory $presenterFactory, IRouter $router, IHttpRequest $httpRequest, IHttpResponse $httpResponse)
 	{
-		$this->context = $context;
+		$this->httpRequest = $httpRequest;
+		$this->httpResponse = $httpResponse;
+		$this->presenterFactory = $presenterFactory;
+		$this->router = $router;
 	}
 
 
@@ -73,21 +88,6 @@ class Application extends Nette\Object
 	 */
 	public function run()
 	{
-		$httpRequest = $this->context->httpRequest;
-		$httpResponse = $this->context->httpResponse;
-
-		// check HTTP method
-		if ($this->allowedMethods) {
-			$method = $httpRequest->getMethod();
-			if (!in_array($method, $this->allowedMethods, TRUE)) {
-				$httpResponse->setCode(Nette\Http\IResponse::S501_NOT_IMPLEMENTED);
-				$httpResponse->setHeader('Allow', implode(',', $this->allowedMethods));
-				echo '<h1>Method ' . htmlSpecialChars($method) . ' is not implemented</h1>';
-				return;
-			}
-		}
-
-		// dispatching
 		$request = NULL;
 		$repeatedError = FALSE;
 		do {
@@ -99,14 +99,8 @@ class Application extends Nette\Object
 				if (!$request) {
 					$this->onStartup($this);
 
-					// routing
-					$router = $this->getRouter();
-
-					// enable routing debugger
-					Diagnostics\RoutingPanel::initialize($this, $httpRequest);
-
-					$request = $router->match($httpRequest);
-					if (!$request instanceof Request) {
+					$request = $this->router->match($this->httpRequest);
+					if (!$request instanceof PresenterRequest) {
 						$request = NULL;
 						throw new BadRequestException('No route for HTTP request.');
 					}
@@ -122,30 +116,32 @@ class Application extends Nette\Object
 				// Instantiate presenter
 				$presenterName = $request->getPresenterName();
 				try {
-					$this->presenter = $this->getPresenterFactory()->createPresenter($presenterName);
+					$this->presenter = $this->presenterFactory->createPresenter($presenterName);
 				} catch (InvalidPresenterException $e) {
 					throw new BadRequestException($e->getMessage(), 404, $e);
 				}
 
-				$this->getPresenterFactory()->getPresenterClass($presenterName);
+				$this->presenterFactory->getPresenterClass($presenterName);
 				$request->setPresenterName($presenterName);
 				$request->freeze();
 
 				// Execute presenter
 				$response = $this->presenter->run($request);
-				$this->onResponse($this, $response);
+				if ($response) {
+					$this->onResponse($this, $response);
+				}
 
 				// Send response
-				if ($response instanceof Responses\ForwardResponse) {
+				if ($response instanceof ForwardResponse) {
 					$request = $response->getRequest();
 					continue;
 
-				} elseif ($response instanceof IResponse) {
-					$response->send($httpRequest, $httpResponse);
+				} elseif ($response instanceof IPresenterResponse) {
+					$response->send($this->httpRequest, $this->httpResponse);
 				}
 				break;
 
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				// fault barrier
 				$this->onError($this, $e);
 
@@ -158,22 +154,22 @@ class Application extends Nette\Object
 					$e = new ApplicationException('An error occurred while executing error-presenter', 0, $e);
 				}
 
-				if (!$httpResponse->isSent()) {
-					$httpResponse->setCode($e instanceof BadRequestException ? $e->getCode() : 500);
+				if (!$this->httpResponse->isSent()) {
+					$this->httpResponse->setCode($e instanceof BadRequestException ? $e->getCode() : 500);
 				}
 
 				if (!$repeatedError && $this->errorPresenter) {
 					$repeatedError = TRUE;
-					if ($this->presenter instanceof UI\Presenter) {
+					if ($this->presenter instanceof Presenter) {
 						try {
 							$this->presenter->forward(":$this->errorPresenter:", array('exception' => $e));
 						} catch (AbortException $foo) {
 							$request = $this->presenter->getLastCreatedRequest();
 						}
 					} else {
-						$request = new Request(
+						$request = new PresenterRequest(
 							$this->errorPresenter,
-							Request::FORWARD,
+							PresenterRequest::FORWARD,
 							array('exception' => $e)
 						);
 					}
@@ -184,9 +180,9 @@ class Application extends Nette\Object
 						$code = $e->getCode();
 					} else {
 						$code = 500;
-						Nette\Diagnostics\Debugger::log($e, Nette\Diagnostics\Debugger::ERROR);
+						Debugger::log($e, Debugger::ERROR);
 					}
-					require __DIR__ . '/templates/error.phtml';
+					require dirname(__FILE__) . '/templates/error.phtml';
 					break;
 				}
 			}
@@ -199,7 +195,7 @@ class Application extends Nette\Object
 
 	/**
 	 * Returns all processed requests.
-	 * @return array of Request
+	 * @return PresenterRequest[]
 	 */
 	final public function getRequests()
 	{
@@ -224,23 +220,12 @@ class Application extends Nette\Object
 
 
 	/**
-	 * Gets the context.
-	 * @return Nette\DI\IContainer
-	 */
-	final public function getContext()
-	{
-		return $this->context;
-	}
-
-
-
-	/**
 	 * Returns router.
 	 * @return IRouter
 	 */
 	public function getRouter()
 	{
-		return $this->context->router;
+		return $this->router;
 	}
 
 
@@ -251,7 +236,7 @@ class Application extends Nette\Object
 	 */
 	public function getPresenterFactory()
 	{
-		return $this->context->presenterFactory;
+		return $this->presenterFactory;
 	}
 
 
@@ -260,39 +245,16 @@ class Application extends Nette\Object
 
 
 
-	/**
-	 * Stores current request to session.
-	 * @param  mixed  optional expiration time
-	 * @return string key
-	 */
-	public function storeRequest($expiration = '+ 10 minutes')
+	/** @deprecated */
+	function storeRequest($expiration = '+ 10 minutes')
 	{
-		$session = $this->context->session->getNamespace('Nette.Application/requests');
-		do {
-			$key = Nette\Utils\Strings::random(5);
-		} while (isset($session[$key]));
-
-		$session[$key] = end($this->requests);
-		$session->setExpiration($expiration, $key);
-		return $key;
+		return $this->presenter->storeRequest($expiration);
 	}
 
-
-
-	/**
-	 * Restores current request to session.
-	 * @param  string key
-	 * @return void
-	 */
-	public function restoreRequest($key)
+	/** @deprecated */
+	function restoreRequest($key)
 	{
-		$session = $this->context->session->getNamespace('Nette.Application/requests');
-		if (isset($session[$key])) {
-			$request = clone $session[$key];
-			unset($session[$key]);
-			$request->setFlag(Request::RESTORED, TRUE);
-			$this->presenter->sendResponse(new Responses\ForwardResponse($request));
-		}
+		return $this->presenter->restoreRequest($key);
 	}
 
 }

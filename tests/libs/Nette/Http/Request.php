@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Http
  */
-
-namespace Nette\Http;
-
-use Nette;
 
 
 
@@ -20,19 +17,21 @@ use Nette;
  *
  * @author     David Grudl
  *
- * @property   UrlScript $url
- * @property-read array $query
- * @property-read array $post
+ * @property-read UrlScript $url
+ * @property-read mixed $query
+ * @property-read bool $post
  * @property-read array $files
  * @property-read array $cookies
  * @property-read string $method
  * @property-read array $headers
- * @property-read Url $referer
+ * @property-read Url|NULL $referer
+ * @property-read bool $secured
+ * @property-read bool $ajax
  * @property-read string $remoteAddress
  * @property-read string $remoteHost
- * @property-read bool $secured
+ * @package Nette\Http
  */
-class Request extends Nette\Object implements IRequest
+class HttpRequest extends Object implements IHttpRequest
 {
 	/** @var string */
 	private $method;
@@ -155,12 +154,12 @@ class Request extends Nette\Object implements IRequest
 	/**
 	 * Returns uploaded file.
 	 * @param  string key (or more keys)
-	 * @return FileUpload
+	 * @return HttpUploadedFile
 	 */
 	final public function getFile($key)
 	{
 		$args = func_get_args();
-		return Nette\Utils\Arrays::get($this->files, $args);
+		return Arrays::get($this->files, $args, NULL);
 	}
 
 

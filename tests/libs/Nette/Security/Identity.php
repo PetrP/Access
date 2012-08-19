@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Security
  */
-
-namespace Nette\Security;
-
-use Nette;
 
 
 
@@ -20,12 +17,14 @@ use Nette;
  *
  * @author     David Grudl
  *
+ * @serializationVersion 1.0
+ *
  * @property   mixed $id
  * @property   array $roles
- *
- * @serializationVersion 1.0
+ * @property-read array $data
+ * @package Nette\Security
  */
-class Identity extends Nette\FreezableObject implements IIdentity
+class Identity extends FreezableObject implements IIdentity
 {
 	/** @var mixed */
 	private $id;
@@ -46,7 +45,7 @@ class Identity extends Nette\FreezableObject implements IIdentity
 	{
 		$this->setId($id);
 		$this->setRoles((array) $roles);
-		$this->data = $data instanceof \Traversable ? iterator_to_array($data) : (array) $data;
+		$this->data = $data instanceof Traversable ? iterator_to_array($data) : (array) $data;
 	}
 
 
@@ -164,7 +163,7 @@ class Identity extends Nette\FreezableObject implements IIdentity
 	 * Removes property.
 	 * @param  string  property name
 	 * @return void
-	 * @throws Nette\MemberAccessException
+	 * @throws MemberAccessException
 	 */
 	public function __unset($name)
 	{

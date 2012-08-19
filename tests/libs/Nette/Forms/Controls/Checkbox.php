@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Check box control. Allows the user to select a true or false condition.
  *
  * @author     David Grudl
+ * @package Nette\Forms\Controls
  */
-class Checkbox extends BaseControl
+class Checkbox extends FormControl
 {
 
 	/**
@@ -50,7 +48,7 @@ class Checkbox extends BaseControl
 
 	/**
 	 * Generates control's HTML element.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	public function getControl()
 	{

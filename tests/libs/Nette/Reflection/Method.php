@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette,
-	Nette\ObjectMixin;
 
 
 
@@ -20,51 +16,61 @@ use Nette,
  * Reports information about a method.
  *
  * @author     David Grudl
+ * @property-read array $defaultParameters
+ * @property-read ClassReflection $declaringClass
+ * @property-read MethodReflection $prototype
+ * @property-read ExtensionReflection $extension
+ * @property-read ParameterReflection[] $parameters
+ * @property-read IAnnotation[][] $annotations
+ * @property-read string $description
+ * @property-read bool $public
+ * @property-read bool $private
+ * @property-read bool $protected
+ * @property-read bool $abstract
+ * @property-read bool $final
+ * @property-read bool $static
+ * @property-read bool $constructor
+ * @property-read bool $destructor
+ * @property-read int $modifiers
+ * @property-write bool $accessible
+ * @property-read bool $closure
+ * @property-read bool $deprecated
+ * @property-read bool $internal
+ * @property-read bool $userDefined
+ * @property-read string $docComment
+ * @property-read int $endLine
+ * @property-read string $extensionName
+ * @property-read string $fileName
+ * @property-read string $name
+ * @property-read string $namespaceName
+ * @property-read int $numberOfParameters
+ * @property-read int $numberOfRequiredParameters
+ * @property-read string $shortName
+ * @property-read int $startLine
+ * @property-read array $staticVariables
+ * @package Nette\Reflection
  */
-class Method extends \ReflectionMethod
+class MethodReflection extends ReflectionMethod
 {
 
 	/**
 	 * @param  string|object
 	 * @param  string
-	 * @return Method
+	 * @return MethodReflection
 	 */
 	public static function from($class, $method)
 	{
-		return new static(is_object($class) ? get_class($class) : $class, $method);
+		return new self(is_object($class) ? get_class($class) : $class, $method);
 	}
 
 
 
 	/**
-	 * @return array
-	 */
-	public function getDefaultParameters()
-	{
-		return self::buildDefaultParameters(parent::getParameters());
-	}
-
-
-
-	/**
-	 * Invokes method using named parameters.
-	 * @param  object
-	 * @param  array
-	 * @return mixed
-	 */
-	public function invokeNamedArgs($object, $args)
-	{
-		return $this->invokeArgs($object, self::combineArgs($this->getDefaultParameters(), $args));
-	}
-
-
-
-	/**
-	 * @return Nette\Callback
+	 * @return Callback
 	 */
 	public function toCallback()
 	{
-		return new Nette\Callback(parent::getDeclaringClass()->getName(), $this->getName());
+		return new Callback(array(parent::getDeclaringClass()->getName(), $this->getName()));
 	}
 
 
@@ -81,48 +87,51 @@ class Method extends \ReflectionMethod
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
 	public function getDeclaringClass()
 	{
-		return new ClassType(parent::getDeclaringClass()->getName());
+		return new ClassReflection(parent::getDeclaringClass()->getName());
 	}
 
 
 
 	/**
-	 * @return Method
+	 * @return MethodReflection
 	 */
 	public function getPrototype()
 	{
 		$prototype = parent::getPrototype();
-		return new Method($prototype->getDeclaringClass()->getName(), $prototype->getName());
+		return new MethodReflection($prototype->getDeclaringClass()->getName(), $prototype->getName());
 	}
 
 
 
 	/**
-	 * @return Extension
+	 * @return ExtensionReflection
 	 */
 	public function getExtension()
 	{
-		return ($name = $this->getExtensionName()) ? new Extension($name) : NULL;
+		return ($name = $this->getExtensionName()) ? new ExtensionReflection($name) : NULL;
 	}
 
 
 
+	/**
+	 * @return ParameterReflection[]
+	 */
 	public function getParameters()
 	{
 		$me = array(parent::getDeclaringClass()->getName(), $this->getName());
 		foreach ($res = parent::getParameters() as $key => $val) {
-			$res[$key] = new Parameter($me, $val->getName());
+			$res[$key] = new ParameterReflection($me, $val->getName());
 		}
 		return $res;
 	}
 
 
 
-	/********************* Nette\Annotations support ****************d*g**/
+	/********************* Annotations support ****************d*g**/
 
 
 
@@ -154,7 +163,7 @@ class Method extends \ReflectionMethod
 
 	/**
 	 * Returns all annotations.
-	 * @return array
+	 * @return IAnnotation[][]
 	 */
 	public function getAnnotations()
 	{
@@ -174,16 +183,16 @@ class Method extends \ReflectionMethod
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 
@@ -219,49 +228,6 @@ class Method extends \ReflectionMethod
 	public function __unset($name)
 	{
 		ObjectMixin::remove($this, $name);
-	}
-
-
-
-	/********************* helpers ****************d*g**/
-
-
-
-	/** @internal */
-	public static function buildDefaultParameters($params)
-	{
-		$res = array();
-		foreach ($params as $param) {
-			$res[$param->getName()] = $param->isDefaultValueAvailable()
-				? $param->getDefaultValue()
-				: NULL;
-
-			if ($param->isArray()) {
-				settype($res[$param->getName()], 'array');
-			}
-		}
-		return $res;
-	}
-
-
-
-	/** @internal */
-	public static function combineArgs($params, $args)
-	{
-		$res = array();
-		$i = 0;
-		foreach ($params as $name => $def) {
-			if (isset($args[$name])) { // NULL treats as none value
-				$val = $args[$name];
-				if ($def !== NULL) {
-					settype($val, gettype($def));
-				}
-				$res[$i++] = $val;
-			} else {
-				$res[$i++] = $def;
-			}
-		}
-		return $res;
 	}
 
 }

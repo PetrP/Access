@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Caching\Storages
  */
-
-namespace Nette\Caching\Storages;
-
-use Nette,
-	Nette\Caching\Cache;
 
 
 
@@ -20,8 +16,9 @@ use Nette,
  * Btree+ based file journal.
  *
  * @author     Jakub Onderka
+ * @package Nette\Caching\Storages
  */
-class FileJournal extends Nette\Object implements IJournal
+class FileJournal extends Object implements ICacheJournal
 {
 	/** Filename with journal */
 	const FILE = 'btfj.dat';
@@ -107,7 +104,6 @@ class FileJournal extends Nette\Object implements IJournal
 
 	/**
 	 * @param  string  Directory location with journal file
-	 * @return void
 	 */
 	public function __construct($dir)
 	{
@@ -119,13 +115,13 @@ class FileJournal extends Nette\Object implements IJournal
 			if (!$init) {
 				clearstatcache();
 				if (!file_exists($this->file)) {
-					throw new Nette\InvalidStateException("Cannot create journal file $this->file.");
+					throw new InvalidStateException("Cannot create journal file $this->file.");
 				}
 			} else {
 				$writen = fwrite($init, pack('N2', self::FILE_MAGIC, $this->lastNode));
 				fclose($init);
 				if ($writen !== self::INT32_SIZE * 2) {
-					throw new Nette\InvalidStateException("Cannot write journal header.");
+					throw new InvalidStateException("Cannot write journal header.");
 				}
 			}
 		}
@@ -133,11 +129,11 @@ class FileJournal extends Nette\Object implements IJournal
 		$this->handle = fopen($this->file, 'r+b');
 
 		if (!$this->handle) {
-			throw new Nette\InvalidStateException("Cannot open journal file '$this->file'.");
+			throw new InvalidStateException("Cannot open journal file '$this->file'.");
 		}
 
 		if (!flock($this->handle, LOCK_SH)) {
-			throw new Nette\InvalidStateException('Cannot acquire shared lock on journal.');
+			throw new InvalidStateException('Cannot acquire shared lock on journal.');
 		}
 
 		$header = stream_get_contents($this->handle, 2 * self::INT32_SIZE, 0);
@@ -149,7 +145,7 @@ class FileJournal extends Nette\Object implements IJournal
 		if ($fileMagic !== self::FILE_MAGIC) {
 			fclose($this->handle);
 			$this->handle = false;
-			throw new Nette\InvalidStateException("Malformed journal file '$this->file'.");
+			throw new InvalidStateException("Malformed journal file '$this->file'.");
 		}
 	}
 
@@ -321,7 +317,6 @@ class FileJournal extends Nette\Object implements IJournal
 
 	/**
 	 * Cleans entries from journal by tags.
-	 * @param  array
 	 * @return array of removed items
 	 */
 	private function cleanTags(array $tags, array &$toDelete)
@@ -373,7 +368,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 			if ($node === FALSE) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException("Cannot load node number $nodeId.");
+					throw new InvalidStateException("Cannot load node number $nodeId.");
 				}
 				break;
 			}
@@ -420,7 +415,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 			if ($node === FALSE) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException('Cannot load node number ' . ($nodeId) . '.');
+					throw new InvalidStateException('Cannot load node number ' . ($nodeId) . '.');
 				}
 				++$i;
 				continue;
@@ -431,7 +426,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 				if (!isset($node[$link])) {
 					if (self::$debug) {
-						throw new Nette\InvalidStateException("Link with ID $searchLink is not in node ". ($nodeId) . '.');
+						throw new InvalidStateException("Link with ID $searchLink is not in node ". ($nodeId) . '.');
 					}
 					continue;
 				} elseif (isset($this->deletedLinks[$link])) {
@@ -479,7 +474,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 				if (!isset($masterNode[$searchKey])) {
 					if (self::$debug) {
-						throw new Nette\InvalidStateException('Bad index.');
+						throw new InvalidStateException('Bad index.');
 					}
 					unset($toDelete[$searchKey]);
 					continue;
@@ -526,7 +521,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 			if ($childNode === FALSE) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException("Cannot load node number $id.");
+					throw new InvalidStateException("Cannot load node number $id.");
 				}
 				break;
 			}
@@ -556,7 +551,7 @@ class FileJournal extends Nette\Object implements IJournal
 
 			if ($node === FALSE) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException("Cannot load node number $nodeId.");
+					throw new InvalidStateException("Cannot load node number $nodeId.");
 				}
 				break;
 			}
@@ -584,7 +579,7 @@ class FileJournal extends Nette\Object implements IJournal
 					$prevNode = $this->getNode($prev);
 					if ($prevNode === FALSE) {
 						if (self::$debug) {
-							throw new Nette\InvalidStateException("Cannot load node number $prev.");
+							throw new InvalidStateException("Cannot load node number $prev.");
 						}
 					} else {
 						if ($nextNodeId === FALSE) {
@@ -633,7 +628,7 @@ class FileJournal extends Nette\Object implements IJournal
 		if ($magic !== self::INDEX_MAGIC && $magic !== self::DATA_MAGIC) {
 			if (!empty($magic)) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException("Node $id has malformed header.");
+					throw new InvalidStateException("Node $id has malformed header.");
 				}
 				$this->deleteNode($id);
 			}
@@ -646,7 +641,7 @@ class FileJournal extends Nette\Object implements IJournal
 		if ($node === FALSE) {
 			$this->deleteNode($id);
 			if (self::$debug) {
-				throw new Nette\InvalidStateException("Cannot deserialize node number $id.");
+				throw new InvalidStateException("Cannot deserialize node number $id.");
 			}
 			return FALSE;
 		}
@@ -686,7 +681,7 @@ class FileJournal extends Nette\Object implements IJournal
 					$parentNode = $this->getNode($parentId);
 					if ($parentNode === FALSE) {
 						if (self::$debug) {
-							throw new Nette\InvalidStateException("Cannot load node number $parentId.");
+							throw new InvalidStateException("Cannot load node number $parentId.");
 						}
 					} else {
 						if ($parentNode[self::INFO][self::END] === $id) {
@@ -712,7 +707,7 @@ class FileJournal extends Nette\Object implements IJournal
 							$prevNode = $this->getNode($nodeInfo[self::PREV_NODE]);
 							if ($prevNode === FALSE) {
 								if (self::$debug) {
-									throw new Nette\InvalidStateException('Cannot load node number ' . $nodeInfo[self::PREV_NODE] . '.');
+									throw new InvalidStateException('Cannot load node number ' . $nodeInfo[self::PREV_NODE] . '.');
 								}
 							} else {
 								$prevNode[self::INFO][self::MAX] = -1;
@@ -783,7 +778,7 @@ class FileJournal extends Nette\Object implements IJournal
 		$isData = $node[self::INFO][self::TYPE] === self::DATA;
 		if ($dataSize > self::NODE_SIZE) {
 			if ($isData) {
-				throw new Nette\InvalidStateException('Saving node is bigger than maximum node size.');
+				throw new InvalidStateException('Saving node is bigger than maximum node size.');
 			} else {
 				$this->bisectNode($id, $node);
 				return FALSE;
@@ -815,7 +810,7 @@ class FileJournal extends Nette\Object implements IJournal
 		fseek($this->handle, self::HEADER_SIZE + self::NODE_SIZE * $id);
 		$writen = fwrite($this->handle, $str);
 		if ($writen === FALSE) {
-			throw new Nette\InvalidStateException("Cannot write node number $id to journal.");
+			throw new InvalidStateException("Cannot write node number $id to journal.");
 		}
 	}
 
@@ -1057,7 +1052,7 @@ class FileJournal extends Nette\Object implements IJournal
 			$parentNode = $this->getNode($parent);
 			if ($parentNode === FALSE) {
 				if (self::$debug) {
-					throw new Nette\InvalidStateException("Cannot load node number $parent.");
+					throw new InvalidStateException("Cannot load node number $parent.");
 				}
 			} else {
 				$parentNode[$halfKey] = $firstId;
@@ -1099,13 +1094,13 @@ class FileJournal extends Nette\Object implements IJournal
 			} while (empty($binary) || $binary === $packedNull);
 
 			if (!ftruncate($this->handle, self::HEADER_SIZE + self::NODE_SIZE * ($id + 1))) {
-				throw new Nette\InvalidStateException('Cannot truncate journal file.');
+				throw new InvalidStateException('Cannot truncate journal file.');
 			}
 		} else {
 			fseek($this->handle, self::HEADER_SIZE + self::NODE_SIZE * $id);
 			$writen = fwrite($this->handle, pack('N', 0));
 			if ($writen !== self::INT32_SIZE) {
-				throw new Nette\InvalidStateException("Cannot delete node number $id from journal.");
+				throw new InvalidStateException("Cannot delete node number $id from journal.");
 			}
 		}
 	}
@@ -1119,7 +1114,7 @@ class FileJournal extends Nette\Object implements IJournal
 	private function deleteAll()
 	{
 		if (!ftruncate($this->handle, self::HEADER_SIZE)) {
-			throw new Nette\InvalidStateException('Cannot truncate journal file.');
+			throw new InvalidStateException('Cannot truncate journal file.');
 		}
 	}
 
@@ -1132,11 +1127,11 @@ class FileJournal extends Nette\Object implements IJournal
 	private function lock()
 	{
 		if (!$this->handle) {
-			throw new Nette\InvalidStateException('File journal file is not opened');
+			throw new InvalidStateException('File journal file is not opened');
 		}
 
 		if (!flock($this->handle, LOCK_EX)) {
-			throw new Nette\InvalidStateException('Cannot acquire exclusive lock on journal.');
+			throw new InvalidStateException('Cannot acquire exclusive lock on journal.');
 		}
 
 		if ($this->lastModTime !== NULL) {

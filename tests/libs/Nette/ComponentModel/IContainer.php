@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\ComponentModel
  */
-
-namespace Nette\ComponentModel;
-
-use Nette;
 
 
 
@@ -19,12 +16,13 @@ use Nette;
  * Containers are objects that logically contain zero or more IComponent components.
  *
  * @author     David Grudl
+ * @package Nette\ComponentModel
  */
-interface IContainer extends IComponent
+interface IComponentContainer extends IComponent
 {
 
 	/**
-	 * Adds the specified component to the IComponentContainer.
+	 * Adds the specified component to the IContainer.
 	 * @param  IComponent
 	 * @param  string
 	 * @return void
@@ -32,7 +30,7 @@ interface IContainer extends IComponent
 	function addComponent(IComponent $component, $name);
 
 	/**
-	 * Removes a component from the IComponentContainer.
+	 * Removes a component from the IContainer.
 	 * @param  IComponent
 	 * @return void
 	 */
@@ -49,7 +47,7 @@ interface IContainer extends IComponent
 	 * Iterates over a components.
 	 * @param  bool    recursive?
 	 * @param  string  class types filter
-	 * @return \Iterator
+	 * @return Iterator
 	 */
 	function getComponents($deep = FALSE, $filterType = NULL);
 

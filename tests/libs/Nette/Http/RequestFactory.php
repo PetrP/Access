@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Http
  */
-
-namespace Nette\Http;
-
-use Nette,
-	Nette\Utils\Strings;
 
 
 
@@ -20,8 +16,9 @@ use Nette,
  * Current HTTP request factory.
  *
  * @author     David Grudl
+ * @package Nette\Http
  */
-class RequestFactory extends Nette\Object
+class HttpRequestFactory extends Object
 {
 	/** @internal */
 	const NONCHARS = '#[^\x09\x0A\x0D\x20-\x7E\xA0-\x{10FFFF}]#u';
@@ -39,7 +36,7 @@ class RequestFactory extends Nette\Object
 
 	/**
 	 * @param  string
-	 * @return RequestFactory  provides a fluent interface
+	 * @return HttpRequestFactory  provides a fluent interface
 	 */
 	public function setEncoding($encoding)
 	{
@@ -51,13 +48,13 @@ class RequestFactory extends Nette\Object
 
 	/**
 	 * Creates current HttpRequest object.
-	 * @return Request
+	 * @return HttpRequest
 	 */
 	public function createHttpRequest()
 	{
 		// DETECTS URI, base path and script path of the request.
 		$url = new UrlScript;
-		$url->scheme = isset($_SERVER['HTTPS']) && strcasecmp($_SERVER['HTTPS'], 'off') ? 'https' : 'http';
+		$url->scheme = !empty($_SERVER['HTTPS']) && strcasecmp($_SERVER['HTTPS'], 'off') ? 'https' : 'http';
 		$url->user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
 		$url->password = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
 
@@ -104,26 +101,26 @@ class RequestFactory extends Nette\Object
 		$url->path = Strings::fixEncoding($url->path);
 
 		// detect script path
-		if (isset($_SERVER['DOCUMENT_ROOT'], $_SERVER['SCRIPT_FILENAME'])
+		if (isset($_SERVER['SCRIPT_NAME'])) {
+			$script = $_SERVER['SCRIPT_NAME'];
+		} elseif (isset($_SERVER['DOCUMENT_ROOT'], $_SERVER['SCRIPT_FILENAME'])
 			&& strncmp($_SERVER['DOCUMENT_ROOT'], $_SERVER['SCRIPT_FILENAME'], strlen($_SERVER['DOCUMENT_ROOT'])) === 0
 		) {
 			$script = '/' . ltrim(strtr(substr($_SERVER['SCRIPT_FILENAME'], strlen($_SERVER['DOCUMENT_ROOT'])), '\\', '/'), '/');
-		} elseif (isset($_SERVER['SCRIPT_NAME'])) {
-			$script = $_SERVER['SCRIPT_NAME'];
 		} else {
 			$script = '/';
 		}
 
-		if (strncasecmp($url->path . '/', $script . '/', strlen($script) + 1) === 0) { // whole script in URL
-			$url->scriptPath = substr($url->path, 0, strlen($script));
-
-		} elseif (strncasecmp($url->path, $script, strrpos($script, '/') + 1) === 0) { // directory part of script in URL
-			$url->scriptPath = substr($url->path, 0, strrpos($script, '/') + 1);
-
-		} else {
-			$url->scriptPath = '/';
+		$path = strtolower($url->path) . '/';
+		$script = strtolower($script) . '/';
+		$max = min(strlen($path), strlen($script));
+		for ($i = 0; $i < $max; $i++) {
+			if ($path[$i] !== $script[$i]) {
+				break;
+			} elseif ($path[$i] === '/') {
+				$url->scriptPath = substr($url->path, 0, $i + 1);
+			}
 		}
-
 
 		// GET, POST, COOKIE
 		$useFilter = (!in_array(ini_get('filter.default'), array('', 'unsafe_raw')) || ini_get('filter.default_flags'));
@@ -181,7 +178,7 @@ class RequestFactory extends Nette\Object
 		}
 
 
-		// FILES and create HttpUploadedFile objects
+		// FILES and create FileUpload objects
 		$files = array();
 		$list = array();
 		if (!empty($_FILES)) {
@@ -205,7 +202,7 @@ class RequestFactory extends Nette\Object
 				if ($this->encoding) {
 					$v['name'] = preg_replace(self::NONCHARS, '', Strings::fixEncoding($v['name']));
 				}
-				$v['@'] = new FileUpload($v);
+				$v['@'] = new HttpUploadedFile($v);
 				continue;
 			}
 
@@ -242,7 +239,7 @@ class RequestFactory extends Nette\Object
 			}
 		}
 
-		return new Request($url, $query, $post, $files, $cookies, $headers,
+		return new HttpRequest($url, $query, $post, $files, $cookies, $headers,
 			isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : NULL,
 			isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : NULL,
 			isset($_SERVER['REMOTE_HOST']) ? $_SERVER['REMOTE_HOST'] : NULL

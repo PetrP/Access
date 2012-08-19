@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Mail
  */
-
-namespace Nette\Mail;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Sends emails via the SMTP server.
  *
  * @author     David Grudl
+ * @package Nette\Mail
  */
-class SmtpMailer extends Nette\Object implements IMailer
+class SmtpMailer extends Object implements IMailer
 {
 	/** @var resource */
 	private $connection;
@@ -67,10 +65,10 @@ class SmtpMailer extends Nette\Object implements IMailer
 
 	/**
 	 * Sends email.
-	 * @param	Message
-	 * @return	void
+	 * @param  Mail
+	 * @return void
 	 */
-	public function send(Message $mail)
+	public function send(Mail $mail)
 	{
 		$data = $mail->generateMessage();
 
@@ -129,6 +127,7 @@ class SmtpMailer extends Nette\Object implements IMailer
 			if (!stream_socket_enable_crypto($this->connection, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
 				throw new SmtpException('Unable to connect via TLS.');
 			}
+			$this->write("EHLO $self", 250);
 		}
 
 		if ($this->username != NULL && $this->password != NULL) {
@@ -161,7 +160,7 @@ class SmtpMailer extends Nette\Object implements IMailer
 	 */
 	private function write($line, $expectedCode = NULL, $message = NULL)
 	{
-		fwrite($this->connection, $line . Message::EOL);
+		fwrite($this->connection, $line . Mail::EOL);
 		if ($expectedCode && !in_array((int) $this->read(), (array) $expectedCode)) {
 			throw new SmtpException('SMTP server did not accept ' . ($message ? $message : $line));
 		}
@@ -193,7 +192,8 @@ class SmtpMailer extends Nette\Object implements IMailer
  * SMTP mailer exception.
  *
  * @author     David Grudl
+ * @package Nette\Mail
  */
-class SmtpException extends \Exception
+class SmtpException extends Exception
 {
 }

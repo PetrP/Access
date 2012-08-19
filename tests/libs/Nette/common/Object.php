@@ -3,20 +3,17 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette
  */
-
-namespace Nette;
-
-use Nette;
 
 
 
 /**
- * Nette\Object is the ultimate ancestor of all instantiable classes.
+ * Object is the ultimate ancestor of all instantiable classes.
  *
  * It defines some handful methods and enhances object core of PHP:
  *   - access to undeclared members throws exceptions
@@ -53,19 +50,19 @@ use Nette;
  *
  * @author     David Grudl
  *
- * @property-read string $class
- * @property-read Nette\Reflection\ClassType $reflection
+ * @property-read ClassReflection $reflection
+ * @package Nette
  */
 abstract class Object
 {
 
 	/**
 	 * Access to reflection.
-	 * @return Nette\Reflection\ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new Reflection\ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 
@@ -93,7 +90,7 @@ abstract class Object
 	 */
 	public static function __callStatic($name, $args)
 	{
-		return ObjectMixin::callStatic(get_called_class(), $name, $args);
+		return ObjectMixin::callStatic(__CLASS__, $name, $args);
 	}
 
 
@@ -101,17 +98,17 @@ abstract class Object
 	/**
 	 * Adding method to class.
 	 * @param  string  method name
-	 * @param  mixed   callback or closure
+	 * @param  callable
 	 * @return mixed
 	 */
 	public static function extensionMethod($name, $callback = NULL)
 	{
 		if (strpos($name, '::') === FALSE) {
-			$class = get_called_class();
+			$class = __CLASS__;
 		} else {
 			list($class, $name) = explode('::', $name);
 		}
-		$class = new Reflection\ClassType($class);
+		$class = new ClassReflection($class);
 		if ($callback === NULL) {
 			return $class->getExtensionMethod($name);
 		} else {

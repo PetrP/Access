@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Iterators
  */
-
-namespace Nette\Iterators;
-
-use Nette;
 
 
 
@@ -19,29 +16,30 @@ use Nette;
  * Callback iterator filter.
  *
  * @author     David Grudl
+ * @package Nette\Iterators
  */
-class Filter extends \FilterIterator
+class NCallbackFilterIterator extends FilterIterator
 {
-	/** @var callback */
+	/** @var callable */
 	private $callback;
 
 
 	/**
 	 * Constructs a filter around another iterator.
 	 * @param
-	 * @param  callback
+	 * @param  callable
 	 */
-	public function __construct(\Iterator $iterator, $callback)
+	public function __construct(Iterator $iterator, $callback)
 	{
 		parent::__construct($iterator);
-		$this->callback = $callback;
+		$this->callback = callback($callback);
 	}
 
 
 
 	public function accept()
 	{
-		return call_user_func($this->callback, $this);
+		return $this->callback->invoke($this);
 	}
 
 }

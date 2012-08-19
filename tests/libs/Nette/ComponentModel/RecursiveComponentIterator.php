@@ -3,25 +3,23 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\ComponentModel
  */
-
-namespace Nette\ComponentModel;
-
-use Nette;
 
 
 
 /**
- * Recursive component iterator. See Container::getComponents().
+ * Recursive component iterator. See ComponentContainer::getComponents().
  *
  * @author     David Grudl
  * @internal
+ * @package Nette\ComponentModel
  */
-class RecursiveComponentIterator extends \RecursiveArrayIterator implements \Countable
+class RecursiveComponentIterator extends RecursiveArrayIterator implements Countable
 {
 
 	/**
@@ -30,14 +28,14 @@ class RecursiveComponentIterator extends \RecursiveArrayIterator implements \Cou
 	 */
 	public function hasChildren()
 	{
-		return $this->current() instanceof IContainer;
+		return $this->current() instanceof IComponentContainer;
 	}
 
 
 
 	/**
 	 * The sub-iterator for the current element.
-	 * @return \RecursiveIterator
+	 * @return RecursiveIterator
 	 */
 	public function getChildren()
 	{

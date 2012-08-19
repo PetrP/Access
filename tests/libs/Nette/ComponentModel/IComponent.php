@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\ComponentModel
  */
-
-namespace Nette\ComponentModel;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Provides functionality required by all components.
  *
  * @author     David Grudl
+ * @package Nette\ComponentModel
  */
 interface IComponent
 {
@@ -32,16 +30,16 @@ interface IComponent
 
 	/**
 	 * Returns the container if any.
-	 * @return IContainer|NULL
+	 * @return IComponentContainer|NULL
 	 */
 	function getParent();
 
 	/**
 	 * Sets the parent of this component.
-	 * @param  IContainer
+	 * @param  IComponentContainer
 	 * @param  string
 	 * @return void
 	 */
-	function setParent(IContainer $parent = NULL, $name = NULL);
+	function setParent(IComponentContainer $parent = NULL, $name = NULL);
 
 }

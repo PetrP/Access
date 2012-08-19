@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Utils
  */
-
-namespace Nette\Utils;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Array tools library.
  *
  * @author     David Grudl
+ * @package Nette\Utils
  */
 final class Arrays
 {
@@ -28,7 +26,7 @@ final class Arrays
 	 */
 	final public function __construct()
 	{
-		throw new Nette\StaticClassException;
+		throw new StaticClassException;
 	}
 
 
@@ -47,6 +45,9 @@ final class Arrays
 			if (is_array($arr) && array_key_exists($k, $arr)) {
 				$arr = $arr[$k];
 			} else {
+				if (func_num_args() < 3) {
+					throw new InvalidArgumentException("Missing item '$k'.");
+				}
 				return $default;
 			}
 		}
@@ -67,7 +68,7 @@ final class Arrays
 			if (is_array($arr) || $arr === NULL) {
 				$arr = & $arr[$k];
 			} else {
-				throw new Nette\InvalidArgumentException('Traversed item is not an array.');
+				throw new InvalidArgumentException('Traversed item is not an array.');
 			}
 		}
 		return $arr;
@@ -159,7 +160,7 @@ final class Arrays
 
 
 	/**
-	 * Return array entries that match the pattern.
+	 * Returns array entries that match the pattern.
 	 * @param  array
 	 * @param  string
 	 * @param  int
@@ -167,9 +168,25 @@ final class Arrays
 	 */
 	public static function grep(array $arr, $pattern, $flags = 0)
 	{
-		Nette\Diagnostics\Debugger::tryError();
+		Debugger::tryError();
 		$res = preg_grep($pattern, $arr, $flags);
-		Strings::catchPregError($pattern);
+		if (Debugger::catchError($e) || preg_last_error()) { // compile error XOR run-time error
+			throw new RegexpException($e ? $e->getMessage() : NULL, $e ? NULL : preg_last_error(), $pattern);
+		}
+		return $res;
+	}
+
+
+
+	/**
+	 * Returns flattened array.
+	 * @param  array
+	 * @return array
+	 */
+	public static function flatten(array $arr)
+	{
+		$res = array();
+		array_walk_recursive($arr, create_function('$a', 'extract(NCFix::$vars['.NCFix::uses(array('res'=>& $res)).'], EXTR_REFS); $res[] = $a; '));
 		return $res;
 	}
 

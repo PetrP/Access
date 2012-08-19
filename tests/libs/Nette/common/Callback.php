@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette
  */
-
-namespace Nette;
-
-use Nette;
 
 
 
@@ -19,38 +16,44 @@ use Nette;
  * PHP callback encapsulation.
  *
  * @author     David Grudl
+ * @property-read bool $callable
+ * @property-read string|array|Closure $native
+ * @property-read bool $static
+ * @package Nette
  */
 final class Callback extends Object
 {
-	/** @var string|array|\Closure */
+	/** @var callable */
 	private $cb;
 
 
 
 	/**
 	 * Do not call directly, use callback() function.
-	 * @param  mixed   class, object, function, callback
-	 * @param  string  method
+	 * @param  callable
 	 */
-	public function __construct($t, $m = NULL)
+	public function __construct($cb, $m = NULL)
 	{
-		if ($m === NULL) {
-			if (is_string($t)) {
-				$t = explode('::', $t, 2);
-				$this->cb = isset($t[1]) ? $t : $t[0];
-			} elseif (is_object($t)) {
-				$this->cb = $t instanceof \Closure ? $t : array($t, '__invoke');
-			} else {
-				$this->cb = $t;
-			}
-
-		} else {
-			$this->cb = array($t, $m);
+		if ($m !== NULL) {
+			$cb = array($cb, $m); // back-compatibility
+		}
+		if (PHP_VERSION_ID < 50202 && is_string($cb) && strpos($cb, '::')) {
+			$cb = explode('::', $cb, 2);
+		} elseif (is_object($cb) && !$cb instanceof Closure) {
+			$cb = array($cb, '__invoke');
 		}
 
-		if (!is_callable($this->cb, TRUE)) {
+		// remove class namespace
+		if (is_string($this->cb) && $a = strrpos($this->cb, '\\')) {
+			$this->cb = substr($this->cb, $a + 1);
+
+		} elseif (is_array($this->cb) && is_string($this->cb[0]) && $a = strrpos($this->cb[0], '\\')) {
+			$this->cb[0] = substr($this->cb[0], $a + 1);
+		}
+		if (!is_callable($cb, TRUE)) {
 			throw new InvalidArgumentException("Invalid callback.");
 		}
+		$this->cb = $cb;
 	}
 
 
@@ -101,23 +104,6 @@ final class Callback extends Object
 
 
 	/**
-	 * Invokes callback using named parameters.
-	 * @param  array
-	 * @return mixed
-	 */
-	public function invokeNamedArgs(array $args)
-	{
-		$ref = $this->toReflection();
-		if (is_array($this->cb)) {
-			return $ref->invokeNamedArgs(is_object($this->cb[0]) ? $this->cb[0] : NULL, $args);
-		} else {
-			return $ref->invokeNamedArgs($args);
-		}
-	}
-
-
-
-	/**
 	 * Verifies that callback can be called.
 	 * @return bool
 	 */
@@ -130,7 +116,7 @@ final class Callback extends Object
 
 	/**
 	 * Returns PHP callback pseudotype.
-	 * @return string|array|\Closure
+	 * @return string|array|Closure
 	 */
 	public function getNative()
 	{
@@ -141,14 +127,18 @@ final class Callback extends Object
 
 	/**
 	 * Returns callback reflection.
-	 * @return Nette\Reflection\GlobalFunction|Nette\Reflection\Method
+	 * @return FunctionReflection|MethodReflection
 	 */
 	public function toReflection()
 	{
-		if (is_array($this->cb)) {
-			return new Nette\Reflection\Method($this->cb[0], $this->cb[1]);
+		if (is_string($this->cb) && strpos($this->cb, '::')) {
+			return new MethodReflection($this->cb);
+		} elseif (is_array($this->cb)) {
+			return new MethodReflection($this->cb[0], $this->cb[1]);
+		} elseif (is_object($this->cb) && !$this->cb instanceof Closure) {
+			return new MethodReflection($this->cb, '__invoke');
 		} else {
-			return new Nette\Reflection\GlobalFunction($this->cb);
+			return new FunctionReflection($this->cb);
 		}
 	}
 
@@ -169,7 +159,7 @@ final class Callback extends Object
 	 */
 	public function __toString()
 	{
-		if ($this->cb instanceof \Closure) {
+		if ($this->cb instanceof Closure) {
 			return '{closure}';
 		} elseif (is_string($this->cb) && $this->cb[0] === "\0") {
 			return '{lambda}';

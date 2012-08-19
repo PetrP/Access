@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Http
  */
-
-namespace Nette\Http;
-
-use Nette;
 
 
 
@@ -21,15 +18,18 @@ use Nette;
  * @author     David Grudl
  *
  * @property-read string $name
+ * @property-read string $sanitizedName
  * @property-read string $contentType
  * @property-read int $size
  * @property-read string $temporaryFile
- * @property-read Nette\Image $image
  * @property-read int $error
- * @property-read array $imageSize
  * @property-read bool $ok
+ * @property-read bool $image
+ * @property-read array $imageSize
+ * @property-read string $contents
+ * @package Nette\Http
  */
-class FileUpload extends Nette\Object
+class HttpUploadedFile extends Object
 {
 	/** @var string */
 	private $name;
@@ -76,13 +76,24 @@ class FileUpload extends Nette\Object
 
 
 	/**
+	 * Returns the sanitized file name.
+	 * @return string
+	 */
+	public function getSanitizedName()
+	{
+		return trim(Strings::webalize($this->name, '.', FALSE), '.-');
+	}
+
+
+
+	/**
 	 * Returns the MIME content type of an uploaded file.
 	 * @return string
 	 */
 	public function getContentType()
 	{
 		if ($this->isOk() && $this->type === NULL) {
-			$this->type = Nette\Utils\MimeTypeDetector::fromFile($this->tmpName);
+			$this->type = MimeTypeDetector::fromFile($this->tmpName);
 		}
 		return $this->type;
 	}
@@ -147,19 +158,16 @@ class FileUpload extends Nette\Object
 	/**
 	 * Move uploaded file to new location.
 	 * @param  string
-	 * @return FileUpload  provides a fluent interface
+	 * @return HttpUploadedFile  provides a fluent interface
 	 */
 	public function move($dest)
 	{
-		$dir = dirname($dest);
-		if (@mkdir($dir, 0755, TRUE)) { // @ - $dir may already exist
-			chmod($dir, 0755);
+		@mkdir(dirname($dest), 0777, TRUE); // @ - dir may already exist
+		if (substr(PHP_OS, 0, 3) === 'WIN') { @unlink($dest); }
+		if (!call_user_func(is_uploaded_file($this->tmpName) ? 'move_uploaded_file' : 'rename', $this->tmpName, $dest)) {
+			throw new InvalidStateException("Unable to move uploaded file '$this->tmpName' to '$dest'.");
 		}
-		$func = is_uploaded_file($this->tmpName) ? 'move_uploaded_file' : 'rename';
-		if (!$func($this->tmpName, $dest)) {
-			throw new Nette\InvalidStateException("Unable to move uploaded file '$this->tmpName' to '$dest'.");
-		}
-		chmod($dest, 0644);
+		chmod($dest, 0666);
 		$this->tmpName = $dest;
 		return $this;
 	}
@@ -179,11 +187,11 @@ class FileUpload extends Nette\Object
 
 	/**
 	 * Returns the image.
-	 * @return Nette\Image
+	 * @return Image
 	 */
 	public function toImage()
 	{
-		return Nette\Image::fromFile($this->tmpName);
+		return Image::fromFile($this->tmpName);
 	}
 
 

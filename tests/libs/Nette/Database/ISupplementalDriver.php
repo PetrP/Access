@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Database
  */
-
-namespace Nette\Database;
-
-use Nette;
 
 
 
@@ -19,9 +16,11 @@ use Nette;
  * Supplemental PDO database driver.
  *
  * @author     David Grudl
+ * @package Nette\Database
  */
 interface ISupplementalDriver
 {
+	const META = 'meta';
 
 	/**
 	 * Delimites identifier for use in a SQL statement.
@@ -35,7 +34,7 @@ interface ISupplementalDriver
 	 * @param  DateTime
 	 * @return string
 	 */
-	function formatDateTime(\DateTime $value);
+	function formatDateTime(DateTime $value);
 
 	/**
 	 * Encodes string for use in a LIKE statement.
@@ -61,5 +60,36 @@ interface ISupplementalDriver
 	 * @return array
 	 */
 	function normalizeRow($row, $statement);
+
+
+	/********************* reflection ****************d*g**/
+
+
+	/**
+	 * Returns list of tables.
+	 * @return array of [name [, (bool) view]]
+	 */
+	function getTables();
+
+	/**
+	 * Returns metadata for all columns in a table.
+	 * @param  string
+	 * @return array of [name, nativetype [, table, fullname, (int) size, (bool) nullable, (mixed) default, (bool) autoincrement, (array) vendor]]
+	 */
+	function getColumns($table);
+
+	/**
+	 * Returns metadata for all indexes in a table.
+	 * @param  string
+	 * @return array of [name, (array of names) columns [, (bool) unique, (bool) primary]]
+	 */
+	function getIndexes($table);
+
+	/**
+	 * Returns metadata for all foreign keys in a table.
+	 * @param  string
+	 * @return array
+	 */
+	function getForeignKeys($table);
 
 }

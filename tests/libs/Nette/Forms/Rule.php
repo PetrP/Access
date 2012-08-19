@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms
  */
-
-namespace Nette\Forms;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Single validation rule or condition represented as value object.
  *
  * @author     David Grudl
+ * @package Nette\Forms
  */
-final class Rule extends Nette\Object
+final class Rule extends Object
 {
 	/** type */
 	const CONDITION = 1;
@@ -31,7 +29,7 @@ final class Rule extends Nette\Object
 	/** type */
 	const FILTER = 3;
 
-	/** @var IControl */
+	/** @var IFormControl */
 	public $control;
 
 	/** @var mixed */

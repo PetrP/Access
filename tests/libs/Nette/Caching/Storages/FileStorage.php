@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Caching\Storages
  */
-
-namespace Nette\Caching\Storages;
-
-use Nette,
-	Nette\Caching\Cache;
 
 
 
@@ -20,8 +16,9 @@ use Nette,
  * Cache file storage.
  *
  * @author     David Grudl
+ * @package Nette\Caching\Storages
  */
-class FileStorage extends Nette\Object implements Nette\Caching\IStorage
+class FileStorage extends Object implements ICacheStorage
 {
 	/**
 	 * Atomic thread safe logic:
@@ -61,16 +58,19 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 	/** @var bool */
 	private $useDirs;
 
-	/** @var IJournal */
+	/** @var ICacheJournal */
 	private $journal;
 
+	/** @var array */
+	private $locks;
 
 
-	public function __construct($dir, IJournal $journal = NULL)
+
+	public function __construct($dir, ICacheJournal $journal = NULL)
 	{
 		$this->dir = realpath($dir);
 		if ($this->dir === FALSE) {
-			throw new Nette\DirectoryNotFoundException("Directory '$dir' not found.");
+			throw new DirectoryNotFoundException("Directory '$dir' not found.");
 		}
 
 		$this->useDirs = (bool) self::$useDirectories;
@@ -143,6 +143,31 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 
 
 	/**
+	 * Prevents item reading and writing. Lock is released by write() or remove().
+	 * @param  string key
+	 * @return void
+	 */
+	public function lock($key)
+	{
+		$cacheFile = $this->getCacheFile($key);
+		if ($this->useDirs && !is_dir($dir = dirname($cacheFile))) {
+			@mkdir($dir, 0777); // @ - directory may already exist
+		}
+		$handle = @fopen($cacheFile, 'r+b'); // @ - file may not exist
+		if (!$handle) {
+			$handle = fopen($cacheFile, 'wb');
+			if (!$handle) {
+				return;
+			}
+		}
+
+		$this->locks[$key] = $handle;
+		flock($handle, LOCK_EX);
+	}
+
+
+
+	/**
 	 * Writes item into the cache.
 	 * @param  string key
 	 * @param  mixed  data
@@ -176,29 +201,24 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 			$meta[self::META_CALLBACKS] = $dp[Cache::CALLBACKS];
 		}
 
+		if (!isset($this->locks[$key])) {
+			$this->lock($key);
+			if (!isset($this->locks[$key])) {
+				return;
+			}
+		}
+		$handle = $this->locks[$key];
+		unset($this->locks[$key]);
+
 		$cacheFile = $this->getCacheFile($key);
-		if ($this->useDirs && !is_dir($dir = dirname($cacheFile))) {
-			umask(0000);
-			if (!mkdir($dir, 0777)) {
-				return;
-			}
-		}
-		$handle = @fopen($cacheFile, 'r+b'); // @ - file may not exist
-		if (!$handle) {
-			$handle = fopen($cacheFile, 'wb');
-			if (!$handle) {
-				return;
-			}
-		}
 
 		if (isset($dp[Cache::TAGS]) || isset($dp[Cache::PRIORITY])) {
 			if (!$this->journal) {
-				throw new Nette\InvalidStateException('CacheJournal has not been provided.');
+				throw new InvalidStateException('CacheJournal has not been provided.');
 			}
 			$this->journal->write($cacheFile, $dp);
 		}
 
-		flock($handle, LOCK_EX);
 		ftruncate($handle, 0);
 
 		if (!is_string($data)) {
@@ -227,7 +247,7 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 
 			flock($handle, LOCK_UN);
 			fclose($handle);
-			return TRUE;
+			return;
 		} while (FALSE);
 
 		$this->delete($cacheFile, $handle);
@@ -242,6 +262,7 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 	 */
 	public function remove($key)
 	{
+		unset($this->locks[$key]);
 		$this->delete($this->getCacheFile($key));
 	}
 
@@ -260,7 +281,7 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 		// cleaning using file iterator
 		if ($all || $collector) {
 			$now = time();
-			foreach (Nette\Utils\Finder::find('*')->from($this->dir)->childFirst() as $entry) {
+			foreach (Finder::find('_*')->from($this->dir)->childFirst() as $entry) {
 				$path = (string) $entry;
 				if ($entry->isDir()) { // collector: remove empty dirs
 					@rmdir($path); // @ - removing dirs is not necessary
@@ -275,7 +296,9 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 						continue;
 					}
 
-					if (!empty($meta[self::META_EXPIRE]) && $meta[self::META_EXPIRE] < $now) {
+					if ((!empty($meta[self::META_DELTA]) && filemtime($meta[self::FILE]) + $meta[self::META_DELTA] < $now)
+						|| (!empty($meta[self::META_EXPIRE]) && $meta[self::META_EXPIRE] < $now)
+					) {
 						$this->delete($path, $meta[self::HANDLE]);
 						continue;
 					}
@@ -364,7 +387,7 @@ class FileStorage extends Nette\Object implements Nette\Caching\IStorage
 	protected function getCacheFile($key)
 	{
 		$file = urlencode($key);
-		if ($this->useDirs && $a = strrpos($file, '%00')) { // %00 = urlencode(Nette\Caching\Cache::NAMESPACE_SEPARATOR)
+		if ($this->useDirs && $a = strrpos($file, '%00')) { // %00 = urlencode(Cache::NAMESPACE_SEPARATOR)
 			$file = substr_replace($file, '/_', $a, 3);
 		}
 		return $this->dir . '/_' . $file;

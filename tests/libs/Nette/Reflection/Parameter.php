@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette,
-	Nette\ObjectMixin;
 
 
 
@@ -20,8 +16,20 @@ use Nette,
  * Reports information about a method's parameter.
  *
  * @author     David Grudl
+ * @property-read ClassReflection $class
+ * @property-read string $className
+ * @property-read ClassReflection $declaringClass
+ * @property-read MethodReflection $declaringFunction
+ * @property-read string $name
+ * @property-read bool $passedByReference
+ * @property-read bool $array
+ * @property-read int $position
+ * @property-read bool $optional
+ * @property-read bool $defaultValueAvailable
+ * @property-read mixed $defaultValue
+ * @package Nette\Reflection
  */
-class Parameter extends \ReflectionParameter
+class ParameterReflection extends ReflectionParameter
 {
 	/** @var mixed */
 	private $function;
@@ -35,11 +43,11 @@ class Parameter extends \ReflectionParameter
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
 	public function getClass()
 	{
-		return ($ref = parent::getClass()) ? new ClassType($ref->getName()) : NULL;
+		return ($ref = parent::getClass()) ? new ClassReflection($ref->getName()) : NULL;
 	}
 
 
@@ -49,43 +57,57 @@ class Parameter extends \ReflectionParameter
 	 */
 	public function getClassName()
 	{
-		return ($tmp = Nette\Utils\Strings::match($this, '#>\s+([a-z0-9_\\\\]+)#i')) ? $tmp[1] : NULL;
+		try {
+			return ($ref = parent::getClass()) ? $ref->getName() : NULL;
+		} catch (ReflectionException $e) {
+			if (preg_match('#Class (.+) does not exist#', $e->getMessage(), $m)) {
+				return $m[1];
+			}
+			throw $e;
+		}
 	}
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
 	public function getDeclaringClass()
 	{
-		return ($ref = parent::getDeclaringClass()) ? new ClassType($ref->getName()) : NULL;
+		return ($ref = parent::getDeclaringClass()) ? new ClassReflection($ref->getName()) : NULL;
 	}
 
 
 
 	/**
-	 * @return Method | FunctionReflection
+	 * @return MethodReflection|FunctionReflection
 	 */
 	public function getDeclaringFunction()
 	{
 		return is_array($this->function)
-			? new Method($this->function[0], $this->function[1])
-			: new GlobalFunction($this->function);
+			? new MethodReflection($this->function[0], $this->function[1])
+			: new FunctionReflection($this->function);
 	}
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	public function __toString()
+	{
+		return 'Parameter $' . parent::getName() . ' in ' . $this->getDeclaringFunction();
+	}
+
+
+
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 

@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Basic annotation implementation.
  *
  * @author     David Grudl
+ * @package Nette\Reflection
  */
-class Annotation extends Nette\Object implements IAnnotation
+class Annotation extends Object implements IAnnotation
 {
 
 	public function __construct(array $values)

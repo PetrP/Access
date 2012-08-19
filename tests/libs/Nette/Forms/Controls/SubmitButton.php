@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -20,10 +17,11 @@ use Nette;
  *
  * @author     David Grudl
  *
- * @property   mixed $validationScope
  * @property-read bool $submittedBy
+ * @property   mixed $validationScope
+ * @package Nette\Forms\Controls
  */
-class SubmitButton extends Button implements Nette\Forms\ISubmitterControl
+class SubmitButton extends Button implements ISubmitterControl
 {
 	/** @var array of function(SubmitButton $sender); Occurs when the button is clicked and form is successfully validated */
 	public $onClick;
@@ -54,11 +52,8 @@ class SubmitButton extends Button implements Nette\Forms\ISubmitterControl
 	 */
 	public function setValue($value)
 	{
-		$this->value = is_scalar($value) && (bool) $value;
-		$form = $this->getForm();
-		if ($this->value || !is_object($form->isSubmitted())) {
-			$this->value = TRUE;
-			$form->setSubmittedBy($this);
+		if ($this->value = $value !== NULL) {
+			$this->getForm()->setSubmittedBy($this);
 		}
 		return $this;
 	}
@@ -115,10 +110,10 @@ class SubmitButton extends Button implements Nette\Forms\ISubmitterControl
 
 	/**
 	 * Submitted validator: has been button pressed?
-	 * @param  Nette\Forms\ISubmitterControl
+	 * @param  ISubmitterControl
 	 * @return bool
 	 */
-	public static function validateSubmitted(Nette\Forms\ISubmitterControl $control)
+	public static function validateSubmitted(ISubmitterControl $control)
 	{
 		return $control->isSubmittedBy();
 	}

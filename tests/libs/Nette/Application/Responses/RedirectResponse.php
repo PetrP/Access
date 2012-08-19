@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Responses
  */
-
-namespace Nette\Application\Responses;
-
-use Nette,
-	Nette\Http;
 
 
 
@@ -20,8 +16,12 @@ use Nette,
  * Redirects to new URI.
  *
  * @author     David Grudl
+ *
+ * @property-read string $url
+ * @property-read int $code
+ * @package Nette\Application\Responses
  */
-class RedirectResponse extends Nette\Object implements Nette\Application\IResponse
+class RedirectResponse extends Object implements IPresenterResponse
 {
 	/** @var string */
 	private $url;
@@ -35,7 +35,7 @@ class RedirectResponse extends Nette\Object implements Nette\Application\IRespon
 	 * @param  string  URI
 	 * @param  int     HTTP code 3xx
 	 */
-	public function __construct($url, $code = Http\IResponse::S302_FOUND)
+	public function __construct($url, $code = IHttpResponse::S302_FOUND)
 	{
 		$this->url = (string) $url;
 		$this->code = (int) $code;
@@ -67,7 +67,7 @@ class RedirectResponse extends Nette\Object implements Nette\Application\IRespon
 	 * Sends response to output.
 	 * @return void
 	 */
-	public function send(Http\IRequest $httpRequest, Http\IResponse $httpResponse)
+	public function send(IHttpRequest $httpRequest, IHttpResponse $httpResponse)
 	{
 		$httpResponse->redirect($this->url, $this->code);
 	}

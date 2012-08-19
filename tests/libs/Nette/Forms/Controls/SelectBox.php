@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -21,11 +18,12 @@ use Nette;
  * @author     David Grudl
  *
  * @property-read mixed $rawValue
+ * @property   bool $prompt
  * @property   array $items
- * @property-read mixed $selectedItem
- * @property-read bool $firstSkipped
+ * @property-read string $selectedItem
+ * @package Nette\Forms\Controls
  */
-class SelectBox extends BaseControl
+class SelectBox extends FormControl
 {
 	/** @var array */
 	private $items = array();
@@ -33,8 +31,8 @@ class SelectBox extends BaseControl
 	/** @var array */
 	protected $allowed = array();
 
-	/** @var bool */
-	private $skipFirst = FALSE;
+	/** @var mixed */
+	private $prompt = FALSE;
 
 	/** @var bool */
 	private $useKeys = TRUE;
@@ -65,7 +63,7 @@ class SelectBox extends BaseControl
 	public function getValue()
 	{
 		$allowed = $this->allowed;
-		if ($this->skipFirst) {
+		if ($this->prompt) {
 			$allowed = array_slice($allowed, 1, count($allowed), TRUE);
 		}
 
@@ -102,18 +100,23 @@ class SelectBox extends BaseControl
 	 * @param  string
 	 * @return SelectBox  provides a fluent interface
 	 */
-	public function skipFirst($item = NULL)
+	public function setPrompt($prompt)
 	{
-		if (is_bool($item)) {
-			$this->skipFirst = $item;
-		} else {
-			$this->skipFirst = TRUE;
-			if ($item !== NULL) {
-				$this->items = array('' => $item) + $this->items;
-				$this->allowed = array('' => '') + $this->allowed;
-			}
+		$this->prompt = $prompt;
+		if ($prompt !== NULL && !is_bool($prompt)) {
+			$this->items = array('' => $prompt) + $this->items;
+			$this->allowed = array('' => '') + $this->allowed;
 		}
 		return $this;
+	}
+
+
+
+	/** @deprecated */
+	function skipFirst($v = NULL)
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use setPrompt() instead.', E_USER_WARNING);
+		return $this->setPrompt($v);
 	}
 
 
@@ -122,9 +125,9 @@ class SelectBox extends BaseControl
 	 * Is first item in select box ignored?
 	 * @return bool
 	 */
-	final public function isFirstSkipped()
+	final public function getPrompt()
 	{
-		return $this->skipFirst;
+		return $this->prompt;
 	}
 
 
@@ -143,12 +146,16 @@ class SelectBox extends BaseControl
 	/**
 	 * Sets items from which to choose.
 	 * @param  array
+	 * @param  bool
 	 * @return SelectBox  provides a fluent interface
 	 */
 	public function setItems(array $items, $useKeys = TRUE)
 	{
 		$this->items = $items;
-		$this->allowed = array();
+		if ($this->prompt) {
+			$this->items = array('' => is_bool($this->prompt) ? $this->items[''] : $this->prompt) + $this->items;
+		}
+		$this->allowed = $this->prompt ? array('' => '') : array();
 		$this->useKeys = (bool) $useKeys;
 
 		foreach ($items as $key => $value) {
@@ -159,13 +166,13 @@ class SelectBox extends BaseControl
 			foreach ($value as $key2 => $value2) {
 				if (!$this->useKeys) {
 					if (!is_scalar($value2)) {
-						throw new Nette\InvalidArgumentException("All items must be scalar.");
+						throw new InvalidArgumentException("All items must be scalar.");
 					}
 					$key2 = $value2;
 				}
 
 				if (isset($this->allowed[$key2])) {
-					throw new Nette\InvalidArgumentException("Items contain duplication for key '$key2'.");
+					throw new InvalidArgumentException("Items contain duplication for key '$key2'.");
 				}
 
 				$this->allowed[$key2] = $value2;
@@ -206,18 +213,18 @@ class SelectBox extends BaseControl
 
 	/**
 	 * Generates control's HTML element.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	public function getControl()
 	{
 		$control = parent::getControl();
-		if ($this->skipFirst) {
+		if ($this->prompt) {
 			reset($this->items);
 			$control->data('nette-empty-value', $this->useKeys ? key($this->items) : current($this->items));
 		}
 		$selected = $this->getValue();
 		$selected = is_array($selected) ? array_flip($selected) : array($selected => TRUE);
-		$option = Nette\Utils\Html::el('option');
+		$option = Html::el('option');
 
 		foreach ($this->items as $key => $value) {
 			if (!is_array($value)) {
@@ -225,17 +232,17 @@ class SelectBox extends BaseControl
 				$dest = $control;
 
 			} else {
-				$dest = $control->create('optgroup')->label($key);
+				$dest = $control->create('optgroup')->label($this->translate($key));
 			}
 
 			foreach ($value as $key2 => $value2) {
-				if ($value2 instanceof Nette\Utils\Html) {
+				if ($value2 instanceof Html) {
 					$dest->add((string) $value2->selected(isset($selected[$key2])));
 
 				} else {
 					$key2 = $this->useKeys ? $key2 : $value2;
 					$value2 = $this->translate((string) $value2);
-					$dest->add((string) $option->value($key2 === $value2 ? NULL : $key2)
+					$dest->add((string) $option->value($key2)
 						->selected(isset($selected[$key2]))
 						->setText($value2));
 				}

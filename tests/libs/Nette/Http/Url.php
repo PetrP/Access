@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Http
  */
-
-namespace Nette\Http;
-
-use Nette;
 
 
 
@@ -50,8 +47,9 @@ use Nette;
  * @property-read string $basePath
  * @property-read string $baseUrl
  * @property-read string $relativeUrl
+ * @package Nette\Http
  */
-class Url extends Nette\FreezableObject
+class Url extends FreezableObject
 {
 	/** @var array */
 	public static $defaultPorts = array(
@@ -90,14 +88,14 @@ class Url extends Nette\FreezableObject
 
 	/**
 	 * @param  string  URL
-	 * @throws Nette\WebNette\InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function __construct($url = NULL)
 	{
 		if (is_string($url)) {
 			$parts = @parse_url($url); // @ - is escalated to exception
 			if ($parts === FALSE) {
-				throw new Nette\InvalidArgumentException("Malformed or unsupported URI '$url'.");
+				throw new InvalidArgumentException("Malformed or unsupported URI '$url'.");
 			}
 
 			foreach ($parts as $key => $val) {

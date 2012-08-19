@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms
  */
-
-namespace Nette\Forms;
-
-use Nette;
 
 
 
@@ -22,10 +19,11 @@ use Nette;
  *
  * @property-read array $controls
  * @property-read array $options
+ * @package Nette\Forms
  */
-class ControlGroup extends Nette\Object
+class FormGroup extends Object
 {
-	/** @var \SplObjectStorage */
+	/** @var SplObjectStorage */
 	protected $controls;
 
 	/** @var array user options */
@@ -35,27 +33,27 @@ class ControlGroup extends Nette\Object
 
 	public function __construct()
 	{
-		$this->controls = new \SplObjectStorage;
+		$this->controls = new SplObjectStorage;
 	}
 
 
 
 	/**
-	 * @return ControlGroup  provides a fluent interface
+	 * @return FormGroup  provides a fluent interface
 	 */
 	public function add()
 	{
 		foreach (func_get_args() as $num => $item) {
-			if ($item instanceof IControl) {
+			if ($item instanceof IFormControl) {
 				$this->controls->attach($item);
 
-			} elseif ($item instanceof \Traversable || is_array($item)) {
+			} elseif ($item instanceof Traversable || is_array($item)) {
 				foreach ($item as $control) {
 					$this->controls->attach($control);
 				}
 
 			} else {
-				throw new Nette\InvalidArgumentException("Only IFormControl items are allowed, the #$num parameter is invalid.");
+				throw new InvalidArgumentException("Only IFormControl items are allowed, the #$num parameter is invalid.");
 			}
 		}
 		return $this;
@@ -84,7 +82,7 @@ class ControlGroup extends Nette\Object
 	 *
 	 * @param  string key
 	 * @param  mixed  value
-	 * @return ControlGroup  provides a fluent interface
+	 * @return FormGroup  provides a fluent interface
 	 */
 	public function setOption($key, $value)
 	{

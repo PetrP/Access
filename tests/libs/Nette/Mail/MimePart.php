@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Mail
  */
-
-namespace Nette\Mail;
-
-use Nette,
-	Nette\Utils\Strings;
 
 
 
@@ -21,11 +17,13 @@ use Nette,
  *
  * @author     David Grudl
  *
- * @property   string $encoding
- * @property   string $body
  * @property-read array $headers
+ * @property-write $contentType
+ * @property   string $encoding
+ * @property   mixed $body
+ * @package Nette\Mail
  */
-class MimePart extends Nette\Object
+class MailMimePart extends Object
 {
 	/** encoding */
 	const ENCODING_BASE64 = 'base64',
@@ -53,12 +51,12 @@ class MimePart extends Nette\Object
 	 * @param  string
 	 * @param  string|array  value or pair email => name
 	 * @param  bool
-	 * @return MimePart  provides a fluent interface
+	 * @return MailMimePart  provides a fluent interface
 	 */
 	public function setHeader($name, $value, $append = FALSE)
 	{
 		if (!$name || preg_match('#[^a-z0-9-]#i', $name)) {
-			throw new Nette\InvalidArgumentException("Header name must be non-empty alphanumeric string, '$name' given.");
+			throw new InvalidArgumentException("Header name must be non-empty alphanumeric string, '$name' given.");
 		}
 
 		if ($value == NULL) { // intentionally ==
@@ -72,25 +70,21 @@ class MimePart extends Nette\Object
 				$tmp = array();
 			}
 
-			foreach ($value as $email => $name) {
-				if ($name !== NULL && !Strings::checkEncoding($name)) {
-					throw new Nette\InvalidArgumentException("Name is not valid UTF-8 string.");
+			foreach ($value as $email => $recipient) {
+				if ($recipient !== NULL && !Strings::checkEncoding($recipient)) {
+					Validators::assert($recipient, 'unicode', "header '$name'");
 				}
-
-				if (!preg_match('#^[^@",\s]+@[^@",\s]+\.[a-z]{2,10}$#i', $email)) {
-					throw new Nette\InvalidArgumentException("Email address '$email' is not valid.");
+				if (preg_match('#[\r\n]#', $recipient)) {
+					throw new InvalidArgumentException("Name must not contain line separator.");
 				}
-
-				if (preg_match('#[\r\n]#', $name)) {
-					throw new Nette\InvalidArgumentException("Name must not contain line separator.");
-				}
-				$tmp[$email] = $name;
+				Validators::assert($email, 'email', "header '$name'");
+				$tmp[$email] = $recipient;
 			}
 
 		} else {
 			$value = (string) $value;
 			if (!Strings::checkEncoding($value)) {
-				throw new Nette\InvalidArgumentException("Header is not valid UTF-8 string.");
+				throw new InvalidArgumentException("Header is not valid UTF-8 string.");
 			}
 			$this->headers[$name] = preg_replace('#[\r\n]+#', ' ', $value);
 		}
@@ -114,7 +108,7 @@ class MimePart extends Nette\Object
 	/**
 	 * Removes a header.
 	 * @param  string
-	 * @return MimePart  provides a fluent interface
+	 * @return MailMimePart  provides a fluent interface
 	 */
 	public function clearHeader($name)
 	{
@@ -157,6 +151,10 @@ class MimePart extends Nette\Object
 			}
 			return substr($s, 0, -1); // last comma
 
+		} elseif (preg_match('#^(\S+; (?:file)?name=)"(.*)"$#', $this->headers[$name], $m)) { // Content-Disposition
+			$offset += strlen($m[1]);
+			return $m[1] . '"' . self::encodeHeader($m[2], $offset) . '"';
+
 		} else {
 			return self::encodeHeader($this->headers[$name], $offset);
 		}
@@ -179,7 +177,7 @@ class MimePart extends Nette\Object
 	 * Sets Content-Type header.
 	 * @param  string
 	 * @param  string
-	 * @return MimePart  provides a fluent interface
+	 * @return MailMimePart  provides a fluent interface
 	 */
 	public function setContentType($contentType, $charset = NULL)
 	{
@@ -192,7 +190,7 @@ class MimePart extends Nette\Object
 	/**
 	 * Sets Content-Transfer-Encoding header.
 	 * @param  string
-	 * @return MimePart  provides a fluent interface
+	 * @return MailMimePart  provides a fluent interface
 	 */
 	public function setEncoding($encoding)
 	{
@@ -215,10 +213,10 @@ class MimePart extends Nette\Object
 
 	/**
 	 * Adds or creates new multipart.
-	 * @param  MimePart
-	 * @return MimePart
+	 * @param  MailMimePart
+	 * @return MailMimePart
 	 */
-	public function addPart(MimePart $part = NULL)
+	public function addPart(MailMimePart $part = NULL)
 	{
 		return $this->parts[] = $part === NULL ? new self : $part;
 	}
@@ -228,7 +226,7 @@ class MimePart extends Nette\Object
 	/**
 	 * Sets textual body.
 	 * @param  mixed
-	 * @return MimePart  provides a fluent interface
+	 * @return MailMimePart  provides a fluent interface
 	 */
 	public function setBody($body)
 	{
@@ -293,7 +291,7 @@ class MimePart extends Nette\Object
 				break;
 
 			default:
-				throw new Nette\InvalidStateException('Unknown encoding.');
+				throw new InvalidStateException('Unknown encoding.');
 			}
 		}
 
@@ -354,4 +352,37 @@ class MimePart extends Nette\Object
 	 * Converts a 8 bit string to a quoted-printable string.
 	 * @param  string
 	 * @return string
-	 */}
+	 */public static function encodeQuotedPrintable($s)
+	{
+		$range = '!"#$%&\'()*+,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}'; // \x21-\x7E without \x3D
+		$pos = 0;
+		$len = 0;
+		$o = '';
+		$size = strlen($s);
+		while ($pos < $size) {
+			if ($l = strspn($s, $range, $pos)) {
+				while ($len + $l > self::LINE_LENGTH - 1) { // 1 = length of suffix =
+					$lx = self::LINE_LENGTH - $len - 1;
+					$o .= substr($s, $pos, $lx) . '=' . self::EOL;
+					$pos += $lx;
+					$l -= $lx;
+					$len = 0;
+				}
+				$o .= substr($s, $pos, $l);
+				$len += $l;
+				$pos += $l;
+
+			} else {
+				$len += 3;
+				if ($len > self::LINE_LENGTH - 1) {
+					$o .= '=' . self::EOL;
+					$len = 3;
+				}
+				$o .= '=' . strtoupper(bin2hex($s[$pos]));
+				$pos++;
+			}
+		}
+		return rtrim($o, '=' . self::EOL);
+	}
+
+}

@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application
  */
-
-namespace Nette\Application;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Default presenter loader.
  *
  * @author     David Grudl
+ * @package Nette\Application
  */
 class PresenterFactory implements IPresenterFactory
 {
@@ -31,18 +29,18 @@ class PresenterFactory implements IPresenterFactory
 	/** @var array */
 	private $cache = array();
 
-	/** @var Nette\DI\IContainer */
-	private $context;
+	/** @var DIContainer */
+	private $container;
 
 
 
 	/**
 	 * @param  string
 	 */
-	public function __construct($baseDir, Nette\DI\IContainer $context)
+	public function __construct($baseDir, DIContainer $container)
 	{
 		$this->baseDir = $baseDir;
-		$this->context = $context;
+		$this->container = $container;
 	}
 
 
@@ -54,9 +52,10 @@ class PresenterFactory implements IPresenterFactory
 	 */
 	public function createPresenter($name)
 	{
-		$class = $this->getPresenterClass($name);
-		$presenter = new $class;
-		$presenter->setContext($this->context);
+		$presenter = $this->container->createInstance($this->getPresenterClass($name));
+		if (method_exists($presenter, 'setContext')) {
+			$this->container->callMethod(array($presenter, 'setContext'));
+		}
 		return $presenter;
 	}
 
@@ -74,7 +73,7 @@ class PresenterFactory implements IPresenterFactory
 			return $class;
 		}
 
-		if (!is_string($name) || !Nette\Utils\Strings::match($name, "#^[a-zA-Z\x7f-\xff][a-zA-Z0-9\x7f-\xff:]*$#")) {
+		if (!is_string($name) || !Strings::match($name, "#^[a-zA-Z\x7f-\xff][a-zA-Z0-9\x7f-\xff:]*$#")) {
 			throw new InvalidPresenterException("Presenter name must be alphanumeric string, '$name' is invalid.");
 		}
 
@@ -84,7 +83,7 @@ class PresenterFactory implements IPresenterFactory
 			// internal autoloading
 			$file = $this->formatPresenterFile($name);
 			if (is_file($file) && is_readable($file)) {
-				Nette\Utils\LimitedScope::load($file);
+				LimitedScope::load($file, TRUE);
 			}
 
 			if (!class_exists($class)) {
@@ -92,11 +91,11 @@ class PresenterFactory implements IPresenterFactory
 			}
 		}
 
-		$reflection = new Nette\Reflection\ClassType($class);
+		$reflection = new ClassReflection($class);
 		$class = $reflection->getName();
 
-		if (!$reflection->implementsInterface('Nette\Application\IPresenter')) {
-			throw new InvalidPresenterException("Cannot load presenter '$name', class '$class' is not Nette\\Application\\IPresenter implementor.");
+		if (!$reflection->implementsInterface('IPresenter')) {
+			throw new InvalidPresenterException("Cannot load presenter '$name', class '$class' is not IPresenter implementor.");
 		}
 
 		if ($reflection->isAbstract()) {
@@ -128,6 +127,7 @@ class PresenterFactory implements IPresenterFactory
 	 */
 	public function formatPresenterClass($presenter)
 	{
+		return strtr($presenter, ':', '_') . 'Presenter';
 		return str_replace(':', 'Module\\', $presenter) . 'Presenter';
 	}
 
@@ -140,6 +140,7 @@ class PresenterFactory implements IPresenterFactory
 	 */
 	public function unformatPresenterClass($class)
 	{
+		return strtr(substr($class, 0, -9), '_', ':');
 		return str_replace('Module\\', ':', substr($class, 0, -9));
 	}
 

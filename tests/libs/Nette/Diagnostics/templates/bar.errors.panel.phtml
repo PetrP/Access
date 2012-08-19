@@ -4,12 +4,12 @@
  * Debug Bar: panel "error" template.
  *
  * This file is part of the Nette Framework (http://nette.org)
- * Copyright (c) 2004, 2010 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
+ * @package Nette\Diagnostics
  */
 
-namespace Nette\Diagnostics;
 
-use Nette;
+
 ?>
 <h1>Errors</h1>
 
@@ -19,7 +19,7 @@ use Nette;
 <?php foreach ($data as $item => $count): list($message, $file, $line) = explode('|', $item) ?>
 <tr class="<?php echo $i++ % 2 ? 'nette-alt' : '' ?>">
 	<td class="nette-right"><?php echo $count ? "$count\xC3\x97" : '' ?></td>
-	<td><pre><?php echo htmlspecialchars($message), ' in ', Helpers::editorLink($file, $line), ':', $line ?></pre></td>
+	<td><pre><?php echo htmlspecialchars($message), ' in ', DebugHelpers::editorLink($file, $line), ':', $line ?></pre></td>
 </tr>
 <?php endforeach ?>
 </table>

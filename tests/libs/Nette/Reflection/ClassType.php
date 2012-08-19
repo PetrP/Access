@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette,
-	Nette\ObjectMixin;
 
 
 
@@ -20,22 +16,51 @@ use Nette,
  * Reports information about a class.
  *
  * @author     David Grudl
+ * @property-read MethodReflection $constructor
+ * @property-read ExtensionReflection $extension
+ * @property-read ClassReflection[] $interfaces
+ * @property-read MethodReflection[] $methods
+ * @property-read ClassReflection $parentClass
+ * @property-read PropertyReflection[] $properties
+ * @property-read IAnnotation[][] $annotations
+ * @property-read string $description
+ * @property-read string $name
+ * @property-read bool $internal
+ * @property-read bool $userDefined
+ * @property-read bool $instantiable
+ * @property-read string $fileName
+ * @property-read int $startLine
+ * @property-read int $endLine
+ * @property-read string $docComment
+ * @property-read mixed[] $constants
+ * @property-read string[] $interfaceNames
+ * @property-read bool $interface
+ * @property-read bool $abstract
+ * @property-read bool $final
+ * @property-read int $modifiers
+ * @property-read array $staticProperties
+ * @property-read array $defaultProperties
+ * @property-read bool $iterateable
+ * @property-read string $extensionName
+ * @property-read string $namespaceName
+ * @property-read string $shortName
+ * @package Nette\Reflection
  */
-class ClassType extends \ReflectionClass
+class ClassReflection extends ReflectionClass
 {
 
-	/** @var array (method => array(type => callback)) */
+	/** @var array (method => array(type => callable)) */
 	private static $extMethods;
 
 
 
 	/**
 	 * @param  string|object
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
 	public static function from($class)
 	{
-		return new static($class);
+		return new self($class);
 	}
 
 
@@ -64,8 +89,8 @@ class ClassType extends \ReflectionClass
 	/**
 	 * Adds a method to class.
 	 * @param  string  method name
-	 * @param  mixed   callback or closure
-	 * @return ClassType  provides a fluent interface
+	 * @param  mixed   callable
+	 * @return ClassReflection  provides a fluent interface
 	 */
 	public function setExtensionMethod($name, $callback)
 	{
@@ -84,6 +109,20 @@ class ClassType extends \ReflectionClass
 	 */
 	public function getExtensionMethod($name)
 	{
+		if (self::$extMethods === NULL || $name === NULL) { // for backwards compatibility
+			$list = get_defined_functions(); // names are lowercase!
+			foreach ($list['user'] as $fce) {
+				$pair = explode('_prototype_', $fce);
+				if (count($pair) === 2) {
+					self::$extMethods[$pair[1]][$pair[0]] = callback($fce);
+					self::$extMethods[$pair[1]][''] = NULL;
+				}
+			}
+			if ($name === NULL) {
+				return NULL;
+			}
+		}
+
 		$class = strtolower($this->getName());
 		$l = & self::$extMethods[strtolower($name)];
 
@@ -112,35 +151,49 @@ class ClassType extends \ReflectionClass
 
 
 
+	/**
+	 * @param  string
+	 * @return bool
+	 */
+	public function is($type)
+	{
+		return $this->isSubclassOf($type) || strcasecmp($this->getName(), ltrim($type, '\\')) === 0;
+	}
+
+
+
 	/********************* Reflection layer ****************d*g**/
 
 
 
 	/**
-	 * @return Method
+	 * @return MethodReflection|NULL
 	 */
 	public function getConstructor()
 	{
-		return ($ref = parent::getConstructor()) ? Method::from($this->getName(), $ref->getName()) : NULL;
+		return ($ref = parent::getConstructor()) ? MethodReflection::from($this->getName(), $ref->getName()) : NULL;
 	}
 
 
 
 	/**
-	 * @return Extension
+	 * @return ExtensionReflection|NULL
 	 */
 	public function getExtension()
 	{
-		return ($name = $this->getExtensionName()) ? new Extension($name) : NULL;
+		return ($name = $this->getExtensionName()) ? new ExtensionReflection($name) : NULL;
 	}
 
 
 
+	/**
+	 * @return ClassReflection[]
+	 */
 	public function getInterfaces()
 	{
 		$res = array();
 		foreach (parent::getInterfaceNames() as $val) {
-			$res[$val] = new static($val);
+			$res[$val] = new self($val);
 		}
 		return $res;
 	}
@@ -148,19 +201,21 @@ class ClassType extends \ReflectionClass
 
 
 	/**
-	 * @return Method
+	 * @return MethodReflection
 	 */
 	public function getMethod($name)
 	{
-		return new Method($this->getName(), $name);
+		return new MethodReflection($this->getName(), $name);
 	}
 
 
-
+	/**
+	 * @return MethodReflection[]
+	 */
 	public function getMethods($filter = -1)
 	{
 		foreach ($res = parent::getMethods($filter) as $key => $val) {
-			$res[$key] = new Method($this->getName(), $val->getName());
+			$res[$key] = new MethodReflection($this->getName(), $val->getName());
 		}
 		return $res;
 	}
@@ -168,19 +223,21 @@ class ClassType extends \ReflectionClass
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection|NULL
 	 */
 	public function getParentClass()
 	{
-		return ($ref = parent::getParentClass()) ? new static($ref->getName()) : NULL;
+		return ($ref = parent::getParentClass()) ? new self($ref->getName()) : NULL;
 	}
 
 
-
+	/**
+	 * @return PropertyReflection[]
+	 */
 	public function getProperties($filter = -1)
 	{
 		foreach ($res = parent::getProperties($filter) as $key => $val) {
-			$res[$key] = new Property($this->getName(), $val->getName());
+			$res[$key] = new PropertyReflection($this->getName(), $val->getName());
 		}
 		return $res;
 	}
@@ -188,16 +245,16 @@ class ClassType extends \ReflectionClass
 
 
 	/**
-	 * @return Property
+	 * @return PropertyReflection
 	 */
 	public function getProperty($name)
 	{
-		return new Property($this->getName(), $name);
+		return new PropertyReflection($this->getName(), $name);
 	}
 
 
 
-	/********************* Nette\Annotations support ****************d*g**/
+	/********************* Annotations support ****************d*g**/
 
 
 
@@ -229,7 +286,7 @@ class ClassType extends \ReflectionClass
 
 	/**
 	 * Returns all annotations.
-	 * @return array
+	 * @return IAnnotation[][]
 	 */
 	public function getAnnotations()
 	{
@@ -249,16 +306,16 @@ class ClassType extends \ReflectionClass
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 

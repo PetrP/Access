@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\UI
  */
-
-namespace Nette\Application\UI;
-
-use Nette;
 
 
 
@@ -21,17 +18,18 @@ use Nette;
  * @author     David Grudl
  *
  * @property-read Presenter $presenter
+ * @package Nette\Application\UI
  */
-class Form extends Nette\Forms\Form implements ISignalReceiver
+class AppForm extends Form implements ISignalReceiver
 {
 
 	/**
 	 * Application form constructor.
 	 */
-	public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL)
+	public function __construct(IComponentContainer $parent = NULL, $name = NULL)
 	{
 		parent::__construct();
-		$this->monitor('Nette\Application\UI\Presenter');
+		$this->monitor('Presenter');
 		if ($parent !== NULL) {
 			$parent->addComponent($this, $name);
 		}
@@ -46,7 +44,7 @@ class Form extends Nette\Forms\Form implements ISignalReceiver
 	 */
 	public function getPresenter($need = TRUE)
 	{
-		return $this->lookup('Nette\Application\UI\Presenter', $need);
+		return $this->lookup('Presenter', $need);
 	}
 
 
@@ -54,13 +52,13 @@ class Form extends Nette\Forms\Form implements ISignalReceiver
 	/**
 	 * This method will be called when the component (or component's parent)
 	 * becomes attached to a monitored object. Do not call this method yourself.
-	 * @param  Nette\Application\IComponent
+	 * @param  IComponent
 	 * @return void
 	 */
 	protected function attached($presenter)
 	{
 		if ($presenter instanceof Presenter) {
-			$name = $this->lookupPath('Nette\Application\UI\Presenter');
+			$name = $this->lookupPath('Presenter');
 
 			if (!isset($this->getElementPrototype()->id)) {
 				$this->getElementPrototype()->id = 'frm-' . $name;
@@ -75,7 +73,9 @@ class Form extends Nette\Forms\Form implements ISignalReceiver
 			// fill-in the form with HTTP data
 			if ($this->isSubmitted()) {
 				foreach ($this->getControls() as $control) {
-					$control->loadHttpData();
+					if (!$control->isDisabled()) {
+						$control->loadHttpData();
+					}
 				}
 			}
 		}
@@ -113,9 +113,9 @@ class Form extends Nette\Forms\Form implements ISignalReceiver
 		}
 
 		if ($isPost) {
-			return Nette\Utils\Arrays::mergeTree($request->getPost(), $request->getFiles());
+			return Arrays::mergeTree($request->getPost(), $request->getFiles());
 		} else {
-			return $request->getParams();
+			return $request->getParameters();
 		}
 	}
 
@@ -133,7 +133,9 @@ class Form extends Nette\Forms\Form implements ISignalReceiver
 	public function signalReceived($signal)
 	{
 		if ($signal === 'submit') {
-			$this->fireEvents();
+			if (!$this->getPresenter()->getRequest()->hasFlag(PresenterRequest::RESTORED)) {
+				$this->fireEvents();
+			}
 		} else {
 			$class = get_class($this);
 			throw new BadSignalException("Missing handler for signal '$signal' in $class.");

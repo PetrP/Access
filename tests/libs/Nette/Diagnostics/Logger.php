@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Diagnostics
  */
-
-namespace Nette\Diagnostics;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * Logger.
  *
  * @author     David Grudl
+ * @package Nette\Diagnostics
  */
-class Logger extends Nette\Object
+class Logger extends Object
 {
 	const DEBUG = 'debug',
 		INFO = 'info',
@@ -31,7 +29,7 @@ class Logger extends Nette\Object
 	/** @var int interval for sending email is 2 days */
 	public static $emailSnooze = 172800;
 
-	/** @var callback handler for sending emails */
+	/** @var callable handler for sending emails */
 	public $mailer = array(__CLASS__, 'defaultMailer');
 
 	/** @var string name of the directory where errors should be logged; FALSE means that logging is disabled */
@@ -51,7 +49,7 @@ class Logger extends Nette\Object
 	public function log($message, $priority = self::INFO)
 	{
 		if (!is_dir($this->directory)) {
-			throw new Nette\DirectoryNotFoundException("Directory '$this->directory' is not found or is not directory.");
+			throw new DirectoryNotFoundException("Directory '$this->directory' is not found or is not directory.");
 		}
 
 		if (is_array($message)) {
@@ -63,7 +61,7 @@ class Logger extends Nette\Object
 			&& @filemtime($this->directory . '/email-sent') + self::$emailSnooze < time() // @ - file may not exist
 			&& @file_put_contents($this->directory . '/email-sent', 'sent') // @ - file may not be writable
 		) {
-			call_user_func($this->mailer, $message, $this->email);
+			callback($this->mailer)->invoke($message, $this->email);
 		}
 		return $res;
 	}
@@ -76,10 +74,14 @@ class Logger extends Nette\Object
 	 * @param  string
 	 * @return void
 	 */
-	private static function defaultMailer($message, $email)
+	public static function defaultMailer($message, $email)
 	{
-		$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] :
-				(isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '');
+		$host = '';
+		foreach (array('HTTP_HOST','SERVER_NAME', 'HOSTNAME') as $item) {
+			if (isset($_SERVER[$item])) {
+				$host = $_SERVER[$item]; break;
+			}
+		}
 
 		$parts = str_replace(
 			array("\r\n", "\n"),

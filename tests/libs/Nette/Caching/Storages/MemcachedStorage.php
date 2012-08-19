@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Caching\Storages
  */
-
-namespace Nette\Caching\Storages;
-
-use Nette,
-	Nette\Caching\Cache;
 
 
 
@@ -20,21 +16,22 @@ use Nette,
  * Memcached storage.
  *
  * @author     David Grudl
+ * @package Nette\Caching\Storages
  */
-class MemcachedStorage extends Nette\Object implements Nette\Caching\IStorage
+class MemcachedStorage extends Object implements ICacheStorage
 {
 	/** @internal cache structure */
 	const META_CALLBACKS = 'callbacks',
 		META_DATA = 'data',
 		META_DELTA = 'delta';
 
-	/** @var \Memcache */
+	/** @var Memcache */
 	private $memcache;
 
 	/** @var string */
 	private $prefix;
 
-	/** @var IJournal */
+	/** @var ICacheJournal */
 	private $journal;
 
 
@@ -50,20 +47,39 @@ class MemcachedStorage extends Nette\Object implements Nette\Caching\IStorage
 
 
 
-	public function __construct($host = 'localhost', $port = 11211, $prefix = '', IJournal $journal = NULL)
+	public function __construct($host = 'localhost', $port = 11211, $prefix = '', ICacheJournal $journal = NULL)
 	{
 		if (!self::isAvailable()) {
-			throw new Nette\NotSupportedException("PHP extension 'memcache' is not loaded.");
+			throw new NotSupportedException("PHP extension 'memcache' is not loaded.");
 		}
 
 		$this->prefix = $prefix;
 		$this->journal = $journal;
-		$this->memcache = new \Memcache;
-		Nette\Diagnostics\Debugger::tryError();
-		$this->memcache->connect($host, $port);
-		if (Nette\Diagnostics\Debugger::catchError($e)) {
-			throw new Nette\InvalidStateException('Memcache::connect(): ' . $e->getMessage(), 0, $e);
+		$this->memcache = new Memcache;
+		if ($host) {
+			$this->addServer($host, $port);
 		}
+	}
+
+
+
+	public function addServer($host = 'localhost', $port = 11211, $timeout = 1)
+	{
+		Debugger::tryError();
+		$this->memcache->addServer($host, $port, TRUE, 1, $timeout);
+		if (Debugger::catchError($e)) {
+			throw new InvalidStateException('Memcache::addServer(): ' . $e->getMessage(), 0, $e);
+		}
+	}
+
+
+
+	/**
+	 * @return Memcache
+	 */
+	public function getConnection()
+	{
+		return $this->memcache;
 	}
 
 
@@ -104,6 +120,17 @@ class MemcachedStorage extends Nette\Object implements Nette\Caching\IStorage
 
 
 	/**
+	 * Prevents item reading and writing. Lock is released by write() or remove().
+	 * @param  string key
+	 * @return void
+	 */
+	public function lock($key)
+	{
+	}
+
+
+
+	/**
 	 * Writes item into the cache.
 	 * @param  string key
 	 * @param  mixed  data
@@ -113,7 +140,7 @@ class MemcachedStorage extends Nette\Object implements Nette\Caching\IStorage
 	public function write($key, $data, array $dp)
 	{
 		if (isset($dp[Cache::ITEMS])) {
-			throw new Nette\NotSupportedException('Dependent items are not supported by MemcachedStorage.');
+			throw new NotSupportedException('Dependent items are not supported by MemcachedStorage.');
 		}
 
 		$key = $this->prefix . $key;
@@ -135,7 +162,7 @@ class MemcachedStorage extends Nette\Object implements Nette\Caching\IStorage
 
 		if (isset($dp[Cache::TAGS]) || isset($dp[Cache::PRIORITY])) {
 			if (!$this->journal) {
-				throw new Nette\InvalidStateException('CacheJournal has not been provided.');
+				throw new InvalidStateException('CacheJournal has not been provided.');
 			}
 			$this->journal->write($key, $dp);
 		}

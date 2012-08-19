@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Responses
  */
-
-namespace Nette\Application\Responses;
-
-use Nette;
 
 
 
@@ -19,8 +16,11 @@ use Nette;
  * String output response.
  *
  * @author     David Grudl
+ *
+ * @property-read mixed $source
+ * @package Nette\Application\Responses
  */
-class TextResponse extends Nette\Object implements Nette\Application\IResponse
+class TextResponse extends Object implements IPresenterResponse
 {
 	/** @var mixed */
 	private $source;
@@ -51,9 +51,9 @@ class TextResponse extends Nette\Object implements Nette\Application\IResponse
 	 * Sends response to output.
 	 * @return void
 	 */
-	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+	public function send(IHttpRequest $httpRequest, IHttpResponse $httpResponse)
 	{
-		if ($this->source instanceof Nette\Templating\ITemplate) {
+		if ($this->source instanceof ITemplate) {
 			$this->source->render();
 
 		} else {

@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Templating
  */
-
-namespace Nette\Templating;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * The exception occured during template compilation.
  *
  * @author     David Grudl
+ * @package Nette\Templating
  */
-class FilterException extends Nette\InvalidStateException
+class TemplateException extends InvalidStateException
 {
 	/** @var string */
 	public $sourceFile;

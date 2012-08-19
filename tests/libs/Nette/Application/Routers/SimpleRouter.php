@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Routers
  */
-
-namespace Nette\Application\Routers;
-
-use Nette,
-	Nette\Application;
 
 
 
@@ -20,8 +16,12 @@ use Nette,
  * The bidirectional route for trivial routing via query parameters.
  *
  * @author     David Grudl
+ *
+ * @property-read array $defaults
+ * @property-read int $flags
+ * @package Nette\Application\Routers
  */
-class SimpleRouter extends Nette\Object implements Application\IRouter
+class SimpleRouter extends Object implements IRouter
 {
 	const PRESENTER_KEY = 'presenter';
 	const MODULE_KEY = 'module';
@@ -46,11 +46,11 @@ class SimpleRouter extends Nette\Object implements Application\IRouter
 		if (is_string($defaults)) {
 			$a = strrpos($defaults, ':');
 			if (!$a) {
-				throw new Nette\InvalidArgumentException("Argument must be array or string in format Presenter:action, '$defaults' given.");
+				throw new InvalidArgumentException("Argument must be array or string in format Presenter:action, '$defaults' given.");
 			}
 			$defaults = array(
 				self::PRESENTER_KEY => substr($defaults, 0, $a),
-				'action' => $a === strlen($defaults) - 1 ? Application\UI\Presenter::DEFAULT_ACTION : substr($defaults, $a + 1),
+				'action' => $a === strlen($defaults) - 1 ? Presenter::DEFAULT_ACTION : substr($defaults, $a + 1),
 			);
 		}
 
@@ -67,10 +67,10 @@ class SimpleRouter extends Nette\Object implements Application\IRouter
 
 	/**
 	 * Maps HTTP request to a Request object.
-	 * @param  Nette\Http\IRequest
-	 * @return Nette\Application\Request|NULL
+	 * @param  IHttpRequest
+	 * @return PresenterRequest|NULL
 	 */
-	public function match(Nette\Http\IRequest $httpRequest)
+	public function match(IHttpRequest $httpRequest)
 	{
 		if ($httpRequest->getUrl()->getPathInfo() !== '') {
 			return NULL;
@@ -80,19 +80,19 @@ class SimpleRouter extends Nette\Object implements Application\IRouter
 		$params += $this->defaults;
 
 		if (!isset($params[self::PRESENTER_KEY])) {
-			throw new Nette\InvalidStateException('Missing presenter.');
+			throw new InvalidStateException('Missing presenter.');
 		}
 
 		$presenter = $this->module . $params[self::PRESENTER_KEY];
 		unset($params[self::PRESENTER_KEY]);
 
-		return new Application\Request(
+		return new PresenterRequest(
 			$presenter,
 			$httpRequest->getMethod(),
 			$params,
 			$httpRequest->getPost(),
 			$httpRequest->getFiles(),
-			array(Application\Request::SECURED => $httpRequest->isSecured())
+			array(PresenterRequest::SECURED => $httpRequest->isSecured())
 		);
 	}
 
@@ -100,13 +100,16 @@ class SimpleRouter extends Nette\Object implements Application\IRouter
 
 	/**
 	 * Constructs absolute URL from Request object.
-	 * @param  Nette\Application\Request
-	 * @param  Nette\Http\Url
+	 * @param  PresenterRequest
+	 * @param  Url
 	 * @return string|NULL
 	 */
-	public function constructUrl(Application\Request $appRequest, Nette\Http\Url $refUrl)
+	public function constructUrl(PresenterRequest $appRequest, Url $refUrl)
 	{
-		$params = $appRequest->getParams();
+		if ($this->flags & self::ONE_WAY) {
+			return NULL;
+		}
+		$params = $appRequest->getParameters();
 
 		// presenter name
 		$presenter = $appRequest->getPresenterName();
@@ -141,6 +144,17 @@ class SimpleRouter extends Nette\Object implements Application\IRouter
 	public function getDefaults()
 	{
 		return $this->defaults;
+	}
+
+
+
+	/**
+	 * Returns flags.
+	 * @return int
+	 */
+	public function getFlags()
+	{
+		return $this->flags;
 	}
 
 }

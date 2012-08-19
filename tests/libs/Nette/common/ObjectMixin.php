@@ -3,22 +3,20 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette
  */
-
-namespace Nette;
-
-use Nette;
 
 
 
 /**
- * Nette\Object behaviour mixin.
+ * Object behaviour mixin.
  *
  * @author     David Grudl
+ * @package Nette
  */
 final class ObjectMixin
 {
@@ -47,7 +45,7 @@ final class ObjectMixin
 	 */
 	public static function call($_this, $name, $args)
 	{
-		$class = new Reflection\ClassType($_this);
+		$class = new ClassReflection($_this);
 
 		if ($name === '') {
 			throw new MemberAccessException("Call to class '$class->name' method without name.");
@@ -55,10 +53,12 @@ final class ObjectMixin
 
 		// event functionality
 		if ($class->hasEventProperty($name)) {
-			if (is_array($list = $_this->$name) || $list instanceof \Traversable) {
+			if (is_array($list = $_this->$name) || $list instanceof Traversable) {
 				foreach ($list as $handler) {
 					callback($handler)->invokeArgs($args);
 				}
+			} elseif ($list !== NULL) {
+				throw new UnexpectedValueException("Property $class->name::$$name must be array or NULL, " . gettype($list) ." given.");
 			}
 			return NULL;
 		}
@@ -75,8 +75,38 @@ final class ObjectMixin
 
 
 	/**
-	 * Call to undefined static method.
+	 * Call to undefined method.
 	 * @param  object
+	 * @param  string  method name
+	 * @param  array   arguments
+	 * @return mixed
+	 * @throws MemberAccessException
+	 */
+	public static function callProperty($_this, $name, $args)
+	{
+		if (strlen($name) > 3) {
+			$op = substr($name, 0, 3);
+			$prop = strtolower($name[3]) . substr($name, 4);
+			if ($op === 'add' && property_exists($_this, $prop.'s')) {
+				$_this->{$prop.'s'}[] = $args[0];
+				return $_this;
+
+			} elseif ($op === 'set' && property_exists($_this, $prop)) {
+				$_this->$prop = $args[0];
+				return $_this;
+
+			} elseif ($op === 'get' && property_exists($_this, $prop)) {
+				return $_this->$prop;
+			}
+		}
+		self::call($_this, $name, $args);
+	}
+
+
+
+	/**
+	 * Call to undefined static method.
+	 * @param  string
 	 * @param  string  method name
 	 * @param  array   arguments
 	 * @return mixed
@@ -112,12 +142,20 @@ final class ObjectMixin
 			self::$methods[$class] = array_flip(get_class_methods($class));
 		}
 
+		// public method as closure getter
+		if (isset(self::$methods[$class][$name])) {
+			$val = create_function('', 'extract(NCFix::$vars['.NCFix::uses(array('_this'=>$_this,'name'=> $name)).'], EXTR_REFS);
+				return call_user_func_array(array($_this, $name), func_get_args());
+			');
+			return $val;
+		}
+
 		// property getter support
 		$name[0] = $name[0] & "\xDF"; // case-sensitive checking, capitalize first character
 		$m = 'get' . $name;
 		if (isset(self::$methods[$class][$m])) {
 			// ampersands:
-			// - uses &__get() because declaration should be forward compatible (e.g. with Nette\Utils\Html)
+			// - uses &__get() because declaration should be forward compatible (e.g. with Html)
 			// - doesn't call &$_this->$m because user could bypass property setter by: $x = & $obj->property; $x = 'new value';
 			$val = $_this->$m();
 			return $val;
@@ -177,7 +215,7 @@ final class ObjectMixin
 	 * Throws exception.
 	 * @param  object
 	 * @param  string  property name
-	 * @param  mixed   property value
+	 * @return void
 	 * @throws MemberAccessException
 	 */
 	public static function remove($_this, $name)

@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Mail
  */
-
-namespace Nette\Mail;
-
-use Nette,
-	Nette\Utils\Strings;
 
 
 
@@ -21,13 +17,15 @@ use Nette,
  *
  * @author     David Grudl
  *
- * @property   string $from
+ * @property   array $from
  * @property   string $subject
  * @property   string $returnPath
  * @property   int $priority
- * @property   string $htmlBody
+ * @property   mixed $htmlBody
+ * @property   IMailer $mailer
+ * @package Nette\Mail
  */
-class Message extends MimePart
+class Mail extends MailMimePart
 {
 	/** Priority */
 	const HIGH = 1,
@@ -35,7 +33,7 @@ class Message extends MimePart
 		LOW = 5;
 
 	/** @var IMailer */
-	public static $defaultMailer = 'Nette\Mail\SendmailMailer';
+	public static $defaultMailer = 'SendmailMailer';
 
 	/** @var array */
 	public static $defaultHeaders = array(
@@ -74,7 +72,7 @@ class Message extends MimePart
 	 * Sets the sender of the message.
 	 * @param  string  email or format "John Doe" <doe@example.com>
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setFrom($email, $name = NULL)
 	{
@@ -99,7 +97,7 @@ class Message extends MimePart
 	 * Adds the reply-to address.
 	 * @param  string  email or format "John Doe" <doe@example.com>
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function addReplyTo($email, $name = NULL)
 	{
@@ -112,7 +110,7 @@ class Message extends MimePart
 	/**
 	 * Sets the subject of the message.
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setSubject($subject)
 	{
@@ -137,7 +135,7 @@ class Message extends MimePart
 	 * Adds email recipient.
 	 * @param  string  email or format "John Doe" <doe@example.com>
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function addTo($email, $name = NULL) // addRecipient()
 	{
@@ -151,7 +149,7 @@ class Message extends MimePart
 	 * Adds carbon copy email recipient.
 	 * @param  string  email or format "John Doe" <doe@example.com>
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function addCc($email, $name = NULL)
 	{
@@ -165,7 +163,7 @@ class Message extends MimePart
 	 * Adds blind carbon copy email recipient.
 	 * @param  string  email or format "John Doe" <doe@example.com>
 	 * @param  string
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function addBcc($email, $name = NULL)
 	{
@@ -195,7 +193,7 @@ class Message extends MimePart
 	/**
 	 * Sets the Return-Path header of the message.
 	 * @param  string  email
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setReturnPath($email)
 	{
@@ -219,7 +217,7 @@ class Message extends MimePart
 	/**
 	 * Sets email priority.
 	 * @param  int
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setPriority($priority)
 	{
@@ -242,9 +240,9 @@ class Message extends MimePart
 
 	/**
 	 * Sets HTML body.
-	 * @param  string|Nette\Templating\ITemplate
+	 * @param  string|ITemplate
 	 * @param  mixed base-path or FALSE to disable parsing
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setHtmlBody($html, $basePath = NULL)
 	{
@@ -271,7 +269,7 @@ class Message extends MimePart
 	 * @param  string
 	 * @param  string
 	 * @param  string
-	 * @return MimePart
+	 * @return MailMimePart
 	 */
 	public function addEmbeddedFile($file, $content = NULL, $contentType = NULL)
 	{
@@ -286,7 +284,7 @@ class Message extends MimePart
 	 * @param  string
 	 * @param  string
 	 * @param  string
-	 * @return MimePart
+	 * @return MailMimePart
 	 */
 	public function addAttachment($file, $content = NULL, $contentType = NULL)
 	{
@@ -297,21 +295,21 @@ class Message extends MimePart
 
 	/**
 	 * Creates file MIME part.
-	 * @return MimePart
+	 * @return MailMimePart
 	 */
 	private function createAttachment($file, $content, $contentType, $disposition)
 	{
-		$part = new MimePart;
+		$part = new MailMimePart;
 		if ($content === NULL) {
 			$content = file_get_contents($file);
 			if ($content === FALSE) {
-				throw new Nette\FileNotFoundException("Unable to read file '$file'.");
+				throw new FileNotFoundException("Unable to read file '$file'.");
 			}
 		} else {
 			$content = (string) $content;
 		}
 		$part->setBody($content);
-		$part->setContentType($contentType ? $contentType : Nette\Utils\MimeTypeDetector::fromString($content));
+		$part->setContentType($contentType ? $contentType : MimeTypeDetector::fromString($content));
 		$part->setEncoding(preg_match('#(multipart|message)/#A', $contentType) ? self::ENCODING_8BIT : self::ENCODING_BASE64);
 		$part->setHeader('Content-Disposition', $disposition . '; filename="' . Strings::fixEncoding(basename($file)) . '"');
 		return $part;
@@ -337,7 +335,7 @@ class Message extends MimePart
 	/**
 	 * Sets the mailer.
 	 * @param  IMailer
-	 * @return Message  provides a fluent interface
+	 * @return Mail  provides a fluent interface
 	 */
 	public function setMailer(IMailer $mailer)
 	{
@@ -354,7 +352,7 @@ class Message extends MimePart
 	public function getMailer()
 	{
 		if ($this->mailer === NULL) {
-			$this->mailer = is_object(self::$defaultMailer) ? self::$defaultMailer : new static::$defaultMailer;
+			$this->mailer = is_object(self::$defaultMailer) ? self::$defaultMailer : new self::$defaultMailer;
 		}
 		return $this->mailer;
 	}
@@ -378,7 +376,7 @@ class Message extends MimePart
 
 	/**
 	 * Builds email. Does not modify itself, but returns a new object.
-	 * @return Message
+	 * @return Mail
 	 */
 	protected function build()
 	{
@@ -409,14 +407,18 @@ class Message extends MimePart
 				}
 			}
 			$alt->setContentType('text/html', 'UTF-8')
-				->setEncoding(preg_match('#[\x80-\xFF]#', $mail->html) ? self::ENCODING_8BIT : self::ENCODING_7BIT)
+				->setEncoding(preg_match('#\S{990}#', $mail->html)
+					? self::ENCODING_QUOTED_PRINTABLE
+					: (preg_match('#[\x80-\xFF]#', $mail->html) ? self::ENCODING_8BIT : self::ENCODING_7BIT))
 				->setBody($mail->html);
 		}
 
 		$text = $mail->getBody();
 		$mail->setBody(NULL);
 		$cursor->setContentType('text/plain', 'UTF-8')
-			->setEncoding(preg_match('#[\x80-\xFF]#', $text) ? self::ENCODING_8BIT : self::ENCODING_7BIT)
+			->setEncoding(preg_match('#\S{990}#', $text)
+				? self::ENCODING_QUOTED_PRINTABLE
+				: (preg_match('#[\x80-\xFF]#', $text) ? self::ENCODING_8BIT : self::ENCODING_7BIT))
 			->setBody($text);
 
 		return $mail;
@@ -430,9 +432,9 @@ class Message extends MimePart
 	 */
 	protected function buildHtml()
 	{
-		if ($this->html instanceof Nette\Templating\ITemplate) {
+		if ($this->html instanceof ITemplate) {
 			$this->html->mail = $this;
-			if ($this->basePath === NULL && $this->html instanceof Nette\Templating\IFileTemplate) {
+			if ($this->basePath === NULL && $this->html instanceof IFileTemplate) {
 				$this->basePath = dirname($this->html->getFile());
 			}
 			$this->html = $this->html->__toString(TRUE);
@@ -471,7 +473,7 @@ class Message extends MimePart
 	protected function buildText()
 	{
 		$text = $this->getBody();
-		if ($text instanceof Nette\Templating\ITemplate) {
+		if ($text instanceof ITemplate) {
 			$text->mail = $this;
 			$this->setBody($text->__toString(TRUE));
 
@@ -479,10 +481,11 @@ class Message extends MimePart
 			$text = Strings::replace($this->html, array(
 				'#<(style|script|head).*</\\1>#Uis' => '',
 				'#<t[dh][ >]#i' => " $0",
-				'#[ \t\r\n]+#' => ' ',
+				'#[\r\n]+#' => ' ',
 				'#<(/?p|/?h\d|li|br|/tr)[ >/]#i' => "\n$0",
 			));
 			$text = html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8');
+			$text = Strings::replace($text, '#[ \t]+#', ' ');
 			$this->setBody(trim($text));
 		}
 	}

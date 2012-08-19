@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Latte
  */
-
-namespace Nette\Latte;
-
-use Nette;
 
 
 
@@ -19,19 +16,28 @@ use Nette;
  * Templating engine Latte.
  *
  * @author     David Grudl
+ * @package Nette\Latte
  */
-class Engine extends Nette\Object
+class LatteFilter extends Object
 {
 	/** @var Parser */
-	public $parser;
+	private $parser;
+
+	/** @var LatteCompiler */
+	private $compiler;
 
 
 
 	public function __construct()
 	{
 		$this->parser = new Parser;
-		$this->parser->handler = new DefaultMacros;
-		$this->parser->macros = DefaultMacros::$defaultMacros;
+		$this->compiler = new LatteCompiler;
+		$this->compiler->defaultContentType = LatteCompiler::CONTENT_XHTML;
+
+		CoreMacros::install($this->compiler);
+		$this->compiler->addMacro('cache', new CacheMacro($this->compiler));
+		UIMacros::install($this->compiler);
+		FormMacros::install($this->compiler);
 	}
 
 
@@ -43,10 +49,27 @@ class Engine extends Nette\Object
 	 */
 	public function __invoke($s)
 	{
-		$this->parser->context = Parser::CONTEXT_TEXT;
-		$this->parser->escape = 'Nette\Templating\DefaultHelpers::escapeHtml|';
-		$this->parser->setDelimiters('\\{(?![\\s\'"{}*])', '\\}');
-		return $this->parser->parse($s);
+		return $this->compiler->compile($this->parser->parse($s));
+	}
+
+
+
+	/**
+	 * @return Parser
+	 */
+	public function getParser()
+	{
+		return $this->parser;
+	}
+
+
+
+	/**
+	 * @return LatteCompiler
+	 */
+	public function getCompiler()
+	{
+		return $this->compiler;
 	}
 
 }

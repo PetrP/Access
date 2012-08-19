@@ -3,17 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette,
-	Nette\Forms\Form,
-	Nette\Utils\Strings;
 
 
 
@@ -23,8 +18,9 @@ use Nette,
  * @author     David Grudl
  *
  * @property   string $emptyValue
+ * @package Nette\Forms\Controls
  */
-abstract class TextBase extends BaseControl
+abstract class TextBase extends FormControl
 {
 	/** @var string */
 	protected $emptyValue = '';
@@ -41,7 +37,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public function setValue($value)
 	{
-		$this->value = is_scalar($value) ? (string) $value : '';
+		$this->value = is_array($value) ? '' : (string) $value;
 		return $this;
 	}
 
@@ -55,7 +51,7 @@ abstract class TextBase extends BaseControl
 	{
 		$value = $this->value;
 		foreach ($this->filters as $filter) {
-			$value = (string) $filter($value);
+			$value = (string) $filter->invoke($value);
 		}
 		return $value === $this->translate($this->emptyValue) ? '' : $value;
 	}
@@ -88,7 +84,7 @@ abstract class TextBase extends BaseControl
 
 	/**
 	 * Appends input string filter callback.
-	 * @param  callback
+	 * @param  callable
 	 * @return TextBase  provides a fluent interface
 	 */
 	public function addFilter($filter)
@@ -103,7 +99,7 @@ abstract class TextBase extends BaseControl
 	{
 		$control = parent::getControl();
 		foreach ($this->getRules() as $rule) {
-			if ($rule->type === Nette\Forms\Rule::VALIDATOR && !$rule->isNegative
+			if ($rule->type === Rule::VALIDATOR && !$rule->isNegative
 				&& ($rule->operation === Form::LENGTH || $rule->operation === Form::MAX_LENGTH)
 			) {
 				$control->maxlength = is_array($rule->arg) ? $rule->arg[1] : $rule->arg;
@@ -164,8 +160,7 @@ abstract class TextBase extends BaseControl
 		if (!is_array($range)) {
 			$range = array($range, $range);
 		}
-		$len = Strings::length($control->getValue());
-		return ($range[0] === NULL || $len >= $range[0]) && ($range[1] === NULL || $len <= $range[1]);
+		return Validators::isInRange(Strings::length($control->getValue()), $range);
 	}
 
 
@@ -177,11 +172,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateEmail(TextBase $control)
 	{
-		$atom = "[-a-z0-9!#$%&'*+/=?^_`{|}~]"; // RFC 5322 unquoted characters in local-part
-		$localPart = "(?:\"(?:[ !\\x23-\\x5B\\x5D-\\x7E]*|\\\\[ -~])+\"|$atom+(?:\\.$atom+)*)"; // quoted or unquoted
-		$chars = "a-z0-9\x80-\xFF"; // superset of IDN
-		$domain = "[$chars](?:[-$chars]{0,61}[$chars])"; // RFC 1034 one domain component
-		return (bool) Strings::match($control->getValue(), "(^$localPart@(?:$domain?\\.)+[-$chars]{2,19}\\z)i");
+		return Validators::isEmail($control->getValue());
 	}
 
 
@@ -193,11 +184,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateUrl(TextBase $control)
 	{
-		$chars = "a-z0-9\x80-\xFF";
-		return (bool) Strings::match(
-			$control->getValue(),
-			"#^(?:https?://|)(?:[$chars](?:[-$chars]{0,61}[$chars])?\\.)+[-$chars]{2,19}(/\S*)?$#i"
-		);
+		return Validators::isUrl($control->getValue()) || Validators::isUrl('http://' . $control->getValue());
 	}
 
 
@@ -230,7 +217,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateInteger(TextBase $control)
 	{
-		return (bool) Strings::match($control->getValue(), '/^-?[0-9]+$/');
+		return Validators::isNumericInt($control->getValue());
 	}
 
 
@@ -242,7 +229,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateFloat(TextBase $control)
 	{
-		return (bool) Strings::match($control->getValue(), '/^-?[0-9]*[.,]?[0-9]+$/');
+		return Validators::isNumeric(self::filterFloat($control->getValue()));
 	}
 
 
@@ -255,8 +242,7 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateRange(TextBase $control, $range)
 	{
-		return ($range[0] === NULL || $control->getValue() >= $range[0])
-			&& ($range[1] === NULL || $control->getValue() <= $range[1]);
+		return Validators::isInRange($control->getValue(), $range);
 	}
 
 

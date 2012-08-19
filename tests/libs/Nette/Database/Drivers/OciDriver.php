@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Database\Drivers
  */
-
-namespace Nette\Database\Drivers;
-
-use Nette;
 
 
 
@@ -19,13 +16,11 @@ use Nette;
  * Supplemental Oracle database driver.
  *
  * @author     David Grudl
+ * @package Nette\Database\Drivers
  */
-class OciDriver extends Nette\Object implements Nette\Database\ISupplementalDriver
+class OciDriver extends Object implements ISupplementalDriver
 {
-	/** @var array */
-	public $supports = array('meta' => TRUE);
-
-	/** @var Nette\Database\Connection */
+	/** @var Connection */
 	private $connection;
 
 	/** @var string  Datetime format */
@@ -33,7 +28,7 @@ class OciDriver extends Nette\Object implements Nette\Database\ISupplementalDriv
 
 
 
-	public function __construct(Nette\Database\Connection $connection, array $options)
+	public function __construct(Connection $connection, array $options)
 	{
 		$this->connection = $connection;
 		$this->fmtDateTime = isset($options['formatDateTime']) ? $options['formatDateTime'] : 'U';
@@ -59,7 +54,7 @@ class OciDriver extends Nette\Object implements Nette\Database\ISupplementalDriv
 	/**
 	 * Formats date-time for use in a SQL statement.
 	 */
-	public function formatDateTime(\DateTime $value)
+	public function formatDateTime(DateTime $value)
 	{
 		return $value->format($this->fmtDateTime);
 	}
@@ -71,7 +66,7 @@ class OciDriver extends Nette\Object implements Nette\Database\ISupplementalDriv
 	 */
 	public function formatLike($value, $pos)
 	{
-		throw new Nette\NotImplementedException;
+		throw new NotImplementedException;
 	}
 
 
@@ -100,6 +95,69 @@ class OciDriver extends Nette\Object implements Nette\Database\ISupplementalDriv
 	public function normalizeRow($row, $statement)
 	{
 		return $row;
+	}
+
+
+
+	/********************* reflection ****************d*g**/
+
+
+
+	/**
+	 * Returns list of tables.
+	 */
+	public function getTables()
+	{
+		$tables = array();
+		foreach ($this->connection->query('SELECT * FROM cat', PDO::FETCH_NUM) as $row) {
+			if ($row[1] === 'TABLE' || $row[1] === 'VIEW') {
+				$tables[] = array(
+					'name' => $row[0],
+					'view' => $row[1] === 'VIEW',
+				);
+			}
+		}
+		return $tables;
+	}
+
+
+
+	/**
+	 * Returns metadata for all columns in a table.
+	 */
+	public function getColumns($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * Returns metadata for all indexes in a table.
+	 */
+	public function getIndexes($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * Returns metadata for all foreign keys in a table.
+	 */
+	public function getForeignKeys($table)
+	{
+		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * @return bool
+	 */
+	public function isSupported($item)
+	{
+		return $item === self::META;
 	}
 
 }

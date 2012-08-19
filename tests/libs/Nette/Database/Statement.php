@@ -3,17 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Database
  */
-
-namespace Nette\Database;
-
-use Nette,
-	PDO,
-	Nette\ObjectMixin;
 
 
 
@@ -21,14 +16,18 @@ use Nette,
  * Represents a prepared statement / result set.
  *
  * @author     David Grudl
+ *
+ * @property-read Connection $connection
+ * @property-write $fetchMode
+ * @package Nette\Database
  */
-class Statement extends \PDOStatement
+class Statement extends PDOStatement
 {
 	/** @var Connection */
 	private $connection;
 
 	/** @var float */
-	public $time;
+	private $time;
 
 	/** @var array */
 	private $types;
@@ -38,7 +37,7 @@ class Statement extends \PDOStatement
 	protected function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
-		$this->setFetchMode(PDO::FETCH_CLASS, 'Nette\Database\Row', array($this));
+		$this->setFetchMode(PDO::FETCH_CLASS, 'Row', array($this));
 	}
 
 
@@ -71,7 +70,7 @@ class Statement extends \PDOStatement
 		$time = microtime(TRUE);
 		try {
 			parent::execute();
-		} catch (\PDOException $e) {
+		} catch (PDOException $e) {
 			$e->queryString = $this->queryString;
 			throw $e;
 		}
@@ -101,34 +100,54 @@ class Statement extends \PDOStatement
 	 */
 	public function normalizeRow($row)
 	{
-		if ($this->types === NULL) {
-			$this->types = array();
-			if ($this->connection->getSupplementalDriver()->supports['meta']) { // workaround for PHP bugs #53782, #54695
-				foreach ($row as $key => $foo) {
-					$type = $this->getColumnMeta(count($this->types));
-					if (isset($type['native_type'])) {
-						$this->types[$key] = Reflection\DatabaseReflection::detectType($type['native_type']);
-					}
-				}
-			}
-		}
-
-		foreach ($this->types as $key => $type) {
+		foreach ($this->detectColumnTypes() as $key => $type) {
 			$value = $row[$key];
-			if ($value === NULL || $value === FALSE || $type === Reflection\DatabaseReflection::FIELD_TEXT) {
+			if ($value === NULL || $value === FALSE || $type === IReflection::FIELD_TEXT) {
 
-			} elseif ($type === Reflection\DatabaseReflection::FIELD_INTEGER) {
+			} elseif ($type === IReflection::FIELD_INTEGER) {
 				$row[$key] = is_float($tmp = $value * 1) ? $value : $tmp;
 
-			} elseif ($type === Reflection\DatabaseReflection::FIELD_FLOAT) {
+			} elseif ($type === IReflection::FIELD_FLOAT) {
 				$row[$key] = (string) ($tmp = (float) $value) === $value ? $tmp : $value;
 
-			} elseif ($type === Reflection\DatabaseReflection::FIELD_BOOL) {
+			} elseif ($type === IReflection::FIELD_BOOL) {
 				$row[$key] = ((bool) $value) && $value !== 'f' && $value !== 'F';
+
+			} elseif ($type === IReflection::FIELD_DATETIME || $type === IReflection::FIELD_DATE || $type === IReflection::FIELD_TIME) {
+				$row[$key] = new DateTime53($value);
+
 			}
 		}
 
 		return $this->connection->getSupplementalDriver()->normalizeRow($row, $this);
+	}
+
+
+
+	private function detectColumnTypes()
+	{
+		if ($this->types === NULL) {
+			$this->types = array();
+			if ($this->connection->getSupplementalDriver()->isSupported(ISupplementalDriver::META)) { // workaround for PHP bugs #53782, #54695
+				$col = 0;
+				while ($meta = $this->getColumnMeta($col++)) {
+					if (isset($meta['native_type'])) {
+						$this->types[$meta['name']] = DatabaseHelpers::detectType($meta['native_type']);
+					}
+				}
+			}
+		}
+		return $this->types;
+	}
+
+
+
+	/**
+	 * @return float
+	 */
+	public function getTime()
+	{
+		return $this->time;
 	}
 
 
@@ -143,48 +162,21 @@ class Statement extends \PDOStatement
 	 */
 	public function dump()
 	{
-		echo "\n<table class=\"dump\">\n<caption>" . htmlSpecialChars($this->queryString) . "</caption>\n";
-		if (!$this->columnCount()) {
-			echo "\t<tr>\n\t\t<th>Affected rows:</th>\n\t\t<td>", $this->rowCount(), "</td>\n\t</tr>\n</table>\n";
-			return;
-		}
-		$i = 0;
-		foreach ($this as $row) {
-			if ($i === 0) {
-				echo "<thead>\n\t<tr>\n\t\t<th>#row</th>\n";
-				foreach ($row as $col => $foo) {
-					echo "\t\t<th>" . htmlSpecialChars($col) . "</th>\n";
-				}
-				echo "\t</tr>\n</thead>\n<tbody>\n";
-			}
-			echo "\t<tr>\n\t\t<th>", $i, "</th>\n";
-			foreach ($row as $col) {
-				//if (is_object($col)) $col = $col->__toString();
-				echo "\t\t<td>", htmlSpecialChars($col), "</td>\n";
-			}
-			echo "\t</tr>\n";
-			$i++;
-		}
-
-		if ($i === 0) {
-			echo "\t<tr>\n\t\t<td><em>empty result set</em></td>\n\t</tr>\n</table>\n";
-		} else {
-			echo "</tbody>\n</table>\n";
-		}
+		DatabaseHelpers::dumpResult($this);
 	}
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return Nette\Reflection\ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new Nette\Reflection\ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 

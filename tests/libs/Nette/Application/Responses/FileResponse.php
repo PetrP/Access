@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\Responses
  */
-
-namespace Nette\Application\Responses;
-
-use Nette;
 
 
 
@@ -19,8 +16,13 @@ use Nette;
  * File download response.
  *
  * @author     David Grudl
+ *
+ * @property-read string $file
+ * @property-read string $name
+ * @property-read string $contentType
+ * @package Nette\Application\Responses
  */
-class FileResponse extends Nette\Object implements Nette\Application\IResponse
+class FileResponse extends Object implements IPresenterResponse
 {
 	/** @var string */
 	private $file;
@@ -37,13 +39,13 @@ class FileResponse extends Nette\Object implements Nette\Application\IResponse
 
 	/**
 	 * @param  string  file path
-	 * @param  string  user name name
+	 * @param  string  imposed file name
 	 * @param  string  MIME content type
 	 */
 	public function __construct($file, $name = NULL, $contentType = NULL)
 	{
 		if (!is_file($file)) {
-			throw new Nette\Application\BadRequestException("File '$file' doesn't exist.");
+			throw new BadRequestException("File '$file' doesn't exist.");
 		}
 
 		$this->file = $file;
@@ -90,7 +92,7 @@ class FileResponse extends Nette\Object implements Nette\Application\IResponse
 	 * Sends response to output.
 	 * @return void
 	 */
-	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+	public function send(IHttpRequest $httpRequest, IHttpResponse $httpResponse)
 	{
 		$httpResponse->setContentType($this->contentType);
 		$httpResponse->setHeader('Content-Disposition', 'attachment; filename="' . $this->name . '"');

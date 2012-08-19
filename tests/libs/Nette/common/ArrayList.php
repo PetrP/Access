@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette
  */
-
-namespace Nette;
-
-use Nette;
 
 
 
@@ -19,8 +16,11 @@ use Nette;
  * Provides the base class for a generic list (items can be accessed by index).
  *
  * @author     David Grudl
+ *
+ * @property-read ArrayIterator $iterator
+ * @package Nette
  */
-class ArrayList extends Object implements \ArrayAccess, \Countable, \IteratorAggregate
+class ArrayList extends Object implements ArrayAccess, Countable, IteratorAggregate
 {
 	private $list = array();
 
@@ -28,11 +28,11 @@ class ArrayList extends Object implements \ArrayAccess, \Countable, \IteratorAgg
 
 	/**
 	 * Returns an iterator over all items.
-	 * @return \ArrayIterator
+	 * @return ArrayIterator
 	 */
 	public function getIterator()
 	{
-		return new \ArrayIterator($this->list);
+		return new ArrayIterator($this->list);
 	}
 
 

@@ -3,16 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Reflection
  */
-
-namespace Nette\Reflection;
-
-use Nette,
-	Nette\ObjectMixin;
 
 
 
@@ -20,8 +16,28 @@ use Nette,
  * Reports information about a function.
  *
  * @author     David Grudl
+ * @property-read array $defaultParameters
+ * @property-read bool $closure
+ * @property-read ExtensionReflection $extension
+ * @property-read ParameterReflection[] $parameters
+ * @property-read bool $disabled
+ * @property-read bool $deprecated
+ * @property-read bool $internal
+ * @property-read bool $userDefined
+ * @property-read string $docComment
+ * @property-read int $endLine
+ * @property-read string $extensionName
+ * @property-read string $fileName
+ * @property-read string $name
+ * @property-read string $namespaceName
+ * @property-read int $numberOfParameters
+ * @property-read int $numberOfRequiredParameters
+ * @property-read string $shortName
+ * @property-read int $startLine
+ * @property-read array $staticVariables
+ * @package Nette\Reflection
  */
-class GlobalFunction extends \ReflectionFunction
+class FunctionReflection extends ReflectionFunction
 {
 	/** @var string|Closure */
 	private $value;
@@ -35,33 +51,11 @@ class GlobalFunction extends \ReflectionFunction
 
 
 	/**
-	 * @return array
-	 */
-	public function getDefaultParameters()
-	{
-		return Method::buildDefaultParameters(parent::getParameters());
-	}
-
-
-
-	/**
-	 * Invokes function using named parameters.
-	 * @param  array
-	 * @return mixed
-	 */
-	public function invokeNamedArgs($args)
-	{
-		return $this->invokeArgs(Method::combineArgs($this->getDefaultParameters(), $args));
-	}
-
-
-
-	/**
-	 * @return Nette\Callback
+	 * @return Callback
 	 */
 	public function toCallback()
 	{
-		return new Nette\Callback($this->value);
+		return new Callback($this->value);
 	}
 
 
@@ -85,35 +79,38 @@ class GlobalFunction extends \ReflectionFunction
 
 
 	/**
-	 * @return Extension
+	 * @return ExtensionReflection
 	 */
 	public function getExtension()
 	{
-		return ($name = $this->getExtensionName()) ? new Extension($name) : NULL;
+		return ($name = $this->getExtensionName()) ? new ExtensionReflection($name) : NULL;
 	}
 
 
 
+	/**
+	 * @return ParameterReflection[]
+	 */
 	public function getParameters()
 	{
 		foreach ($res = parent::getParameters() as $key => $val) {
-			$res[$key] = new Parameter($this->value, $val->getName());
+			$res[$key] = new ParameterReflection($this->value, $val->getName());
 		}
 		return $res;
 	}
 
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Object behaviour ****************d*g**/
 
 
 
 	/**
-	 * @return ClassType
+	 * @return ClassReflection
 	 */
-	public static function getReflection()
+	public function getReflection()
 	{
-		return new ClassType(get_called_class());
+		return new ClassReflection($this);
 	}
 
 

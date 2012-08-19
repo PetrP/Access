@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application
  */
-
-namespace Nette\Application;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * The bi-directional router.
  *
  * @author     David Grudl
+ * @package Nette\Application
  */
 interface IRouter
 {
@@ -30,17 +28,17 @@ interface IRouter
 
 	/**
 	 * Maps HTTP request to a Request object.
-	 * @param  Nette\Http\IRequest
-	 * @return Request|NULL
+	 * @param  IHttpRequest
+	 * @return PresenterRequest|NULL
 	 */
-	function match(Nette\Http\IRequest $httpRequest);
+	function match(IHttpRequest $httpRequest);
 
 	/**
 	 * Constructs absolute URL from Request object.
-	 * @param  Request
-	 * @param  Nette\Http\Url referential URI
+	 * @param  PresenterRequest
+	 * @param  Url referential URI
 	 * @return string|NULL
 	 */
-	function constructUrl(Request $appRequest, Nette\Http\Url $refUrl);
+	function constructUrl(PresenterRequest $appRequest, Url $refUrl);
 
 }

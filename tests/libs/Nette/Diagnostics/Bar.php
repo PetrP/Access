@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Diagnostics
  */
-
-namespace Nette\Diagnostics;
-
-use Nette;
 
 
 
@@ -19,9 +16,9 @@ use Nette;
  * Debug Bar.
  *
  * @author     David Grudl
- * @internal
+ * @package Nette\Diagnostics
  */
-class Bar extends Nette\Object
+class DebugBar extends Object
 {
 	/** @var array */
 	private $panels = array();
@@ -32,7 +29,7 @@ class Bar extends Nette\Object
 	 * Add custom panel.
 	 * @param  IBarPanel
 	 * @param  string
-	 * @return void
+	 * @return DebugBar  provides a fluent interface
 	 */
 	public function addPanel(IBarPanel $panel, $id = NULL)
 	{
@@ -43,6 +40,7 @@ class Bar extends Nette\Object
 			} while (isset($this->panels[$id]));
 		}
 		$this->panels[$id] = $panel;
+		return $this;
 	}
 
 
@@ -53,6 +51,7 @@ class Bar extends Nette\Object
 	 */
 	public function render()
 	{
+		$obLevel = ob_get_level();
 		$panels = array();
 		foreach ($this->panels as $id => $panel) {
 			try {
@@ -61,15 +60,18 @@ class Bar extends Nette\Object
 					'tab' => $tab = (string) $panel->getTab(),
 					'panel' => $tab ? (string) $panel->getPanel() : NULL,
 				);
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				$panels[] = array(
-					'id' => "error-$id",
-					'tab' => "Error: $id",
-					'panel' => nl2br(htmlSpecialChars((string) $e)),
+					'id' => "error-" . preg_replace('#[^a-z0-9]+#i', '-', $id),
+					'tab' => "Error in $id",
+					'panel' => '<h1>Error: ' . $id . '</h1><div class="nette-inner">' . nl2br(htmlSpecialChars($e)) . '</div>',
 				);
+				while (ob_get_level() > $obLevel) { // restore ob-level if broken
+					ob_end_clean();
+				}
 			}
 		}
-		require __DIR__ . '/templates/bar.phtml';
+		require dirname(__FILE__) . '/templates/bar.phtml';
 	}
 
 }

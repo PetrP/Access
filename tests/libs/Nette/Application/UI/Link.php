@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application\UI
  */
-
-namespace Nette\Application\UI;
-
-use Nette;
 
 
 
@@ -21,8 +18,12 @@ use Nette;
  *
  * @author     David Grudl
  * @internal
+ *
+ * @property-read string $destination
+ * @property-read array $parameters
+ * @package Nette\Application\UI
  */
-class Link extends Nette\Object
+class Link extends Object
 {
 	/** @var PresenterComponent */
 	private $component;
@@ -66,7 +67,7 @@ class Link extends Nette\Object
 	 * @param  mixed
 	 * @return Link  provides a fluent interface
 	 */
-	public function setParam($key, $value)
+	public function setParameter($key, $value)
 	{
 		$this->params[$key] = $value;
 		return $this;
@@ -79,7 +80,7 @@ class Link extends Nette\Object
 	 * @param  string
 	 * @return mixed
 	 */
-	public function getParam($key)
+	public function getParameter($key)
 	{
 		return isset($this->params[$key]) ? $this->params[$key] : NULL;
 	}
@@ -90,7 +91,7 @@ class Link extends Nette\Object
 	 * Returns link parameters.
 	 * @return array
 	 */
-	public function getParams()
+	public function getParameters()
 	{
 		return $this->params;
 	}
@@ -106,8 +107,8 @@ class Link extends Nette\Object
 		try {
 			return $this->component->link($this->destination, $this->params);
 
-		} catch (\Exception $e) {
-			Nette\Diagnostics\Debugger::toStringException($e);
+		} catch (Exception $e) {
+			Debugger::toStringException($e);
 		}
 	}
 

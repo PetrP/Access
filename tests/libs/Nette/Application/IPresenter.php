@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Application
  */
-
-namespace Nette\Application;
-
-use Nette;
 
 
 
@@ -19,14 +16,15 @@ use Nette;
  * Presenter converts Request to IResponse.
  *
  * @author     David Grudl
+ * @package Nette\Application
  */
 interface IPresenter
 {
 
 	/**
-	 * @param  Request
-	 * @return IResponse
+	 * @param  PresenterRequest
+	 * @return IPresenterResponse
 	 */
-	function run(Request $request);
+	function run(PresenterRequest $request);
 
 }

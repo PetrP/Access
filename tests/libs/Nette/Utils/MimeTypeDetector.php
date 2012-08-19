@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Utils
  */
-
-namespace Nette\Utils;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Mime type detector.
  *
  * @author     David Grudl
+ * @package Nette\Utils
  */
 final class MimeTypeDetector
 {
@@ -28,7 +26,7 @@ final class MimeTypeDetector
 	 */
 	final public function __construct()
 	{
-		throw new Nette\StaticClassException;
+		throw new StaticClassException;
 	}
 
 
@@ -41,7 +39,7 @@ final class MimeTypeDetector
 	public static function fromFile($file)
 	{
 		if (!is_file($file)) {
-			throw new Nette\FileNotFoundException("File '$file' not found.");
+			throw new FileNotFoundException("File '$file' not found.");
 		}
 
 		$info = @getimagesize($file); // @ - files smaller than 12 bytes causes read error

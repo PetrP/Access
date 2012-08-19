@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Submittable image button form control.
  *
  * @author     David Grudl
+ * @package Nette\Forms\Controls
  */
 class ImageButton extends SubmitButton
 {
@@ -57,7 +55,7 @@ class ImageButton extends SubmitButton
 	{
 		$path = $this->getHtmlName(); // img_x or img['x']
 		$path = explode('[', strtr(str_replace(']', '', strpos($path, '[') === FALSE ? $path . '.x' : substr($path, 0, -2)), '.', '_'));
-		$this->setValue(Nette\Utils\Arrays::get($this->getForm()->getHttpData(), $path) !== NULL);
+		$this->setValue(Arrays::get($this->getForm()->getHttpData(), $path, NULL));
 	}
 
 }

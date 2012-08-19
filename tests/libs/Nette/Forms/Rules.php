@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms
  */
-
-namespace Nette\Forms;
-
-use Nette;
 
 
 
@@ -19,8 +16,9 @@ use Nette;
  * List of validation & condition rules.
  *
  * @author     David Grudl
+ * @package Nette\Forms
  */
-final class Rules extends Nette\Object implements \IteratorAggregate
+final class Rules extends Object implements IteratorAggregate
 {
 	/** @internal */
 	const VALIDATE_PREFIX = 'validate';
@@ -42,7 +40,7 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 		Form::IMAGE => 'The uploaded file must be image in format JPEG, GIF or PNG.',
 	);
 
-	/** @var array of Rule */
+	/** @var Rule[] */
 	private $rules = array();
 
 	/** @var Rules */
@@ -51,12 +49,12 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 	/** @var array */
 	private $toggles = array();
 
-	/** @var IControl */
+	/** @var IFormControl */
 	private $control;
 
 
 
-	public function __construct(IControl $control)
+	public function __construct(IFormControl $control)
 	{
 		$this->control = $control;
 	}
@@ -104,12 +102,12 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 
 	/**
 	 * Adds a validation condition on specified control a returns new branch.
-	 * @param  IControl form control
+	 * @param  IFormControl form control
 	 * @param  mixed      condition type
 	 * @param  mixed      optional condition arguments
 	 * @return Rules      new branch
 	 */
-	public function addConditionOn(IControl $control, $operation, $arg = NULL)
+	public function addConditionOn(IFormControl $control, $operation, $arg = NULL)
 	{
 		$rule = new Rule;
 		$rule->control = $control;
@@ -117,7 +115,7 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 		$this->adjustOperation($rule);
 		$rule->arg = $arg;
 		$rule->type = Rule::CONDITION;
-		$rule->subRules = new static($this->control);
+		$rule->subRules = new self($this->control);
 		$rule->subRules->parent = $this;
 
 		$this->rules[] = $rule;
@@ -134,7 +132,7 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 	{
 		$rule = clone end($this->parent->rules);
 		$rule->isNegative = !$rule->isNegative;
-		$rule->subRules = new static($this->parent->control);
+		$rule->subRules = new self($this->parent->control);
 		$rule->subRules->parent = $this->parent;
 		$this->parent->rules[] = $rule;
 		return $rule->subRules;
@@ -200,11 +198,11 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 
 	/**
 	 * Iterates over ruleset.
-	 * @return \ArrayIterator
+	 * @return ArrayIterator
 	 */
 	final public function getIterator()
 	{
-		return new \ArrayIterator($this->rules);
+		return new ArrayIterator($this->rules);
 	}
 
 
@@ -233,7 +231,7 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 
 		if (!$this->getCallback($rule)->isCallable()) {
 			$operation = is_scalar($rule->operation) ? " '$rule->operation'" : '';
-			throw new Nette\InvalidArgumentException("Unknown operation$operation for control '{$rule->control->name}'.");
+			throw new InvalidArgumentException("Unknown operation$operation for control '{$rule->control->name}'.");
 		}
 	}
 
@@ -254,6 +252,9 @@ final class Rules extends Nette\Object implements \IteratorAggregate
 	public static function formatMessage($rule, $withValue)
 	{
 		$message = $rule->message;
+		if ($message instanceof Html) {
+			return $message;
+		}
 		if (!isset($message)) { // report missing message by notice
 			$message = self::$defaultMessages[$rule->operation];
 		}

@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Forms\Controls
  */
-
-namespace Nette\Forms\Controls;
-
-use Nette;
 
 
 
@@ -19,6 +16,7 @@ use Nette;
  * Select box control that allows multiple item selection.
  *
  * @author     David Grudl
+ * @package Nette\Forms\Controls
  */
 class MultiSelectBox extends SelectBox
 {
@@ -31,7 +29,7 @@ class MultiSelectBox extends SelectBox
 	public function getValue()
 	{
 		$allowed = array_keys($this->allowed);
-		if ($this->isFirstSkipped()) {
+		if ($this->getPrompt()) {
 			unset($allowed[0]);
 		}
 		return array_intersect($this->getRawValue(), $allowed);
@@ -99,13 +97,30 @@ class MultiSelectBox extends SelectBox
 
 	/**
 	 * Generates control's HTML element.
-	 * @return Nette\Utils\Html
+	 * @return Html
 	 */
 	public function getControl()
 	{
 		$control = parent::getControl();
 		$control->multiple = TRUE;
 		return $control;
+	}
+
+
+
+	/**
+	 * Count/length validator.
+	 * @param  MultiSelectBox
+	 * @param  array  min and max length pair
+	 * @return bool
+	 */
+	public static function validateLength(MultiSelectBox $control, $range)
+	{
+		if (!is_array($range)) {
+			$range = array($range, $range);
+		}
+		$count = count($control->getSelectedItem());
+		return ($range[0] === NULL || $count >= $range[0]) && ($range[1] === NULL || $count <= $range[1]);
 	}
 
 }

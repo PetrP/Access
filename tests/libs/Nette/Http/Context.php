@@ -3,15 +3,12 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
+ * @package Nette\Http
  */
-
-namespace Nette\Http;
-
-use Nette;
 
 
 
@@ -19,18 +16,23 @@ use Nette;
  * HTTP-specific tasks.
  *
  * @author     David Grudl
+ *
+ * @property-read bool $modified
+ * @property-read IHttpRequest $request
+ * @property-read IHttpResponse $response
+ * @package Nette\Http
  */
-class Context extends Nette\Object
+class HttpContext extends Object
 {
-	/** @var IRequest */
+	/** @var IHttpRequest */
 	private $request;
 
-	/** @var IResponse */
+	/** @var IHttpResponse */
 	private $response;
 
 
 
-	public function __construct(IRequest $request, IResponse $response)
+	public function __construct(IHttpRequest $request, IHttpResponse $response)
 	{
 		$this->request = $request;
 		$this->response = $response;
@@ -83,14 +85,14 @@ class Context extends Nette\Object
 			return TRUE;
 		}
 
-		$this->response->setCode(IResponse::S304_NOT_MODIFIED);
+		$this->response->setCode(IHttpResponse::S304_NOT_MODIFIED);
 		return FALSE;
 	}
 
 
 
 	/**
-	 * @return IRequest
+	 * @return IHttpRequest
 	 */
 	public function getRequest()
 	{
@@ -100,7 +102,7 @@ class Context extends Nette\Object
 
 
 	/**
-	 * @return IResponse
+	 * @return IHttpResponse
 	 */
 	public function getResponse()
 	{
