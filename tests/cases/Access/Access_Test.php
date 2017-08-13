@@ -2,6 +2,7 @@
 
 /**
  * @covers ::Access
+ * @covers ::AccessProxy
  */
 class Access_Test extends TestCase
 {
@@ -81,4 +82,12 @@ class Access_Test extends TestCase
 		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
 		$this->assertSame('_protected', $this->readAttribute($a, 'reflection')->getName());
 	}
+
+	public function testProxy()
+	{
+		$a = AccessProxy($this);
+		$this->assertInstanceOf('AccessProxy', $a);
+		$this->assertAttributeSame($this, 'instance', $a);
+	}
+
 }

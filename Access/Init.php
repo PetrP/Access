@@ -17,6 +17,7 @@ require_once dirname(__FILE__) . '/Base.php';
 require_once dirname(__FILE__) . '/Class.php';
 require_once dirname(__FILE__) . '/Method.php';
 require_once dirname(__FILE__) . '/Property.php';
+require_once dirname(__FILE__) . '/Proxy.php';
 if (PHP_VERSION_ID >= 50300)
 {
 	require_once dirname(__FILE__) . '/Accessor.php';
@@ -72,4 +73,18 @@ function Access($object, $what = NULL)
 	{
 		return new AccessMethod($object, $what);
 	}
+}
+
+/**
+ * <code>
+ * $a = AccessProxy(new Object);
+ * $a->privateProperty->privateMethod()->privateProperty;
+ * </code>
+ *
+ * @param object|string
+ * @return AccessProxy
+ */
+function AccessProxy($object)
+{
+	return new AccessProxy($object);
 }

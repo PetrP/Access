@@ -60,6 +60,35 @@ assert(11, $a->bar(1));
 ```
 
 
+## Chaining objects and arrays
+
+```php
+class Foo
+{
+	private $foo;
+
+	public function __construct()
+	{
+		$this->foo = ['arrayKey' => new Bar];
+	}
+}
+class Bar
+{
+	private $bar;
+}
+
+$a = AccessProxy(new Foo);
+
+$a->foo['arrayKey']->bar = 100;
+assert($a->foo['arrayKey']->bar === 100);
+
+assert($a->foo instanceof AccessProxy);
+assert(is_array($a->foo->getInstance()));
+assert($a->foo['arrayKey'] instanceof AccessProxy);
+assert($a->foo['arrayKey']->getInstance() instanceof Bar);
+```
+
+
 Requirements
 ------------
 Library has no external dependencies.
