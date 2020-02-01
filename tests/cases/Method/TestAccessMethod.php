@@ -48,3 +48,43 @@ class TestAccessMethod2 extends TestAccessMethod
 {
 
 }
+
+class TestAccessMethodWithConstructor extends TestAccessMethod2
+{
+	public function __construct()
+	{
+		throw new Exception;
+	}
+	private static function privateStatic()
+	{
+		return 10;
+	}
+}
+
+class TestAccessMethodWithDestructor extends TestAccessMethod2
+{
+	public function __destruct()
+	{
+		throw new Exception;
+	}
+	private static function privateStatic()
+	{
+		return 11;
+	}
+}
+
+abstract class TestAccessMethodAbstract extends TestAccessMethod2
+{
+	private static function privateStatic()
+	{
+		return 12;
+	}
+}
+
+class TestAccessMethodNonInstantiable extends TestAccessMethod2
+{
+	private static function privateStatic()
+	{
+		return 13;
+	}
+}

@@ -104,6 +104,7 @@ PHP >= 5.2.0 AND < 5.3.2 not supported:
  * Private methods.
  * Read private static property.
  * Write private property.
+ * No limitation when extension [runkit](https://pecl.php.net/package/runkit) or [classkit](https://pecl.php.net/package/classkit) is provided.
 
 
 Instalations

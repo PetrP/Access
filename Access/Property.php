@@ -66,7 +66,11 @@ class AccessProperty extends AccessBase
 		parent::__construct($object, $r);
 		$ac = PHP_VERSION_ID < 50300 ? 'AccessAccessorPhp52' : 'AccessAccessor';
 		$accessor = new $ac;
-		$this->access = $accessor->accessProperty($this->reflection);
+		$this->access = (object) array(
+			'get' => $accessor->accessPropertyGet($this->reflection),
+			'set' => null, // lazy error
+			'accessor' => $accessor,
+		);
 	}
 
 	/** @return mixed */
@@ -83,6 +87,11 @@ class AccessProperty extends AccessBase
 	public function set($value)
 	{
 		$this->check();
+		if ($this->access->set === null)
+		{
+			$this->access->set = $this->access->accessor->accessPropertySet($this->reflection);
+			unset($this->access->accessor);
+		}
 		call_user_func($this->access->set, $this->instance, $value);
 		return $this;
 	}

@@ -7,7 +7,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
 
 	public function checkPhpVersion($version, $message = NULL)
 	{
-		if (PHP_VERSION_ID < $version)
+		if (PHP_VERSION_ID < $version && !AccessAccessorPhp52::hasExtensionSupport())
 		{
 			$this->markTestSkipped("PHP < {$version}" . ($message ? ": {$message}" : ''));
 		}
@@ -15,7 +15,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
 
 	public function expectedExceptionBeforePhpVersion($version, $exceptionName, $exceptionMessage = '', $exceptionCode = 0)
 	{
-		if (PHP_VERSION_ID < $version)
+		if (PHP_VERSION_ID < $version && !AccessAccessorPhp52::hasExtensionSupport())
 		{
 			$this->setExpectedException($exceptionName, $exceptionMessage, $exceptionCode);
 			$this->markAsSkippedInTearDown = "PHP < {$version}" . ($exceptionMessage ? ": {$exceptionMessage}" : '');

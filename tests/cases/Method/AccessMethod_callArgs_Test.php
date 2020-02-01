@@ -176,4 +176,33 @@ class AccessMethod_callArgs_Test extends TestCase
 		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::argsProtected()');
 		$this->assertSame(6, $a->callArgs());
 	}
+
+	public function testPrivateStaticWithConstructor()
+	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
+		$a = new AccessMethod('TestAccessMethodWithConstructor', 'privateStatic');
+		$this->assertSame(10, $a->callArgs());
+	}
+
+	public function testPrivateStaticWithDestructor()
+	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
+		$a = new AccessMethod('TestAccessMethodWithDestructor', 'privateStatic');
+		$this->assertSame(11, $a->callArgs());
+	}
+
+	public function testPrivateStaticAbstract()
+	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
+		$a = new AccessMethod('TestAccessMethodAbstract', 'privateStatic');
+		$this->assertSame(12, $a->callArgs());
+	}
+
+	public function testPrivateStaticNonInstantiable()
+	{
+		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
+		$a = new AccessMethod('TestAccessMethodNonInstantiable', 'privateStatic');
+		$this->assertSame(13, $a->callArgs());
+	}
+
 }

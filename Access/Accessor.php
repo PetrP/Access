@@ -16,19 +16,14 @@
  *
  * @see AccessAccessorPhp52
  */
-class AccessAccessor extends AccessBase
+class AccessAccessor
 {
-
-	public function __construct()
-	{
-
-	}
 
 	/**
 	 * @param ReflectionMethod
 	 * @return callable(object|NULL $instance, array $args)
 	 */
-	public function accessMethod(ReflectionMethod $method)
+	public static function accessMethod(ReflectionMethod $method)
 	{
 		if (PHP_VERSION_ID < 50302)
 		{
@@ -43,9 +38,9 @@ class AccessAccessor extends AccessBase
 
 	/**
 	 * @param ReflectionProperty
-	 * @return object get => callable(object|NULL $instance), set => callable(object|NULL $instance, mixed $value)
+	 * @return callable(object|NULL $instance)
 	 */
-	public function accessProperty(ReflectionProperty $property)
+	public static function accessPropertyGet(ReflectionProperty $property)
 	{
 		if (PHP_VERSION_ID < 50300)
 		{
@@ -53,24 +48,37 @@ class AccessAccessor extends AccessBase
 		}
 		$property->setAccessible(true);
 
-		return (object) array(
-			'get' => function ($instance) use ($property) {
-				if ($instance)
-				{
-					return $property->getValue($instance);
-				}
-				return $property->getValue();
-			},
-			'set' => function ($instance, $value) use ($property) {
-				if ($instance)
-				{
-					$property->setValue($instance, $value);
-				}
-				else
-				{
-					$property->setValue($value);
-				}
-			},
-		);
+		return function ($instance) use ($property) {
+			if ($instance)
+			{
+				return $property->getValue($instance);
+			}
+			return $property->getValue();
+		};
 	}
+
+	/**
+	 * @param ReflectionProperty
+	 * @return callable(object|NULL $instance, mixed $value)
+	 */
+	public static function accessPropertySet(ReflectionProperty $property)
+	{
+		if (PHP_VERSION_ID < 50300)
+		{
+			throw new Exception('AccessProperty needs PHP 5.3.0 or newer.');
+		}
+		$property->setAccessible(true);
+
+		return function ($instance, $value) use ($property) {
+			if ($instance)
+			{
+				$property->setValue($instance, $value);
+			}
+			else
+			{
+				$property->setValue($value);
+			}
+		};
+	}
+
 }

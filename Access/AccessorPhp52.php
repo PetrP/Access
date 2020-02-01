@@ -9,18 +9,20 @@
 /**
  * Accessor for PHP 5.2.
  *
- * Uses abstract static subclass to access to protected members (created via eval).
- * And object-to-array conversion to read private properties.
- *
  * Not supported:
  * 	- Final classes.
  * 	- Private methods.
  * 	- Read private static property.
  * 	- Write private property.
  *
+ * No limitation when extension runkit or classkit is provided.
+ * @see https://pecl.php.net/package/classkit
+ * @see https://pecl.php.net/package/runkit
+ * @see https://pecl.php.net/package/runkit7
+ *
  * @see AccessAccessor
  */
-class AccessAccessorPhp52 extends AccessBase
+class AccessAccessorPhp52
 {
 
 	/** @var array className => helperClassName */
@@ -29,16 +31,32 @@ class AccessAccessorPhp52 extends AccessBase
 	/** @var array @access private */
 	static $callbackUses = array();
 
-	public function __construct()
+	public static function hasExtensionSupport()
 	{
-
+		if (extension_loaded('runkit') && version_compare(RUNKIT_VERSION, '1.0.1', '>='))
+		{
+			return 'runkit1';
+		}
+		else if (extension_loaded('runkit7'))
+		{
+			return 'runkit7';
+		}
+		else if (extension_loaded('classkit'))
+		{
+			return 'classkit';
+		}
+		else if (extension_loaded('runkit')) // prefer classkit because versions 1.0.0-dev and 0.9 are broken in php 5.2
+		{
+			return 'runkit0';
+		}
+		return null;
 	}
 
 	/**
 	 * @param ReflectionMethod
 	 * @return callable(object|NULL $instance, array $args)
 	 */
-	public function accessMethod(ReflectionMethod $method)
+	public static function accessMethod(ReflectionMethod $method)
 	{
 		if (PHP_VERSION_ID >= 50302 OR $method->isPublic())
 		{
@@ -46,32 +64,27 @@ class AccessAccessorPhp52 extends AccessBase
 			{
 				$method->setAccessible(true);
 			}
-			return $this->callback('$instance, array $args', '
+			return self::callback('$instance, array $args', '
 				return call_user_func_array(array($method, "invoke"), array_merge(array($instance), $args));
 			', array('method' => $method));
 		}
-		else if ($method->isProtected())
+		else
 		{
-			return $this->callback('$instance, array $args', '
-				if (!$instance) $instance = $className; // static
-				return call_user_func(array($helperClassName, "__AccessAccessor_php52__invoke"), $instance, $methodName, $args);
+			return self::callback('$instance, array $args', '
+				return call_user_func($helperCallback, $instance, $instance ? $instance : $className, $methodName, $args);
 			', array(
-				'helperClassName' => $this->getHelperClass($method->getDeclaringClass()),
+				'helperCallback' => self::getHelperCallback($method, 'invoke'),
 				'className' => $method->getDeclaringClass()->getName(),
 				'methodName' => $method->getName(),
 			));
-		}
-		else if ($method->isPrivate())
-		{
-			throw new Exception('AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		}
 	}
 
 	/**
 	 * @param ReflectionProperty
-	 * @return object get => callable(object|NULL $instance), set => callable(object|NULL $instance, mixed $value)
+	 * @return callable(object|NULL $instance)
 	 */
-	public function accessProperty(ReflectionProperty $property)
+	public static function accessPropertyGet(ReflectionProperty $property, $isStatic = false)
 	{
 		if (PHP_VERSION_ID >= 50300 OR $property->isPublic())
 		{
@@ -79,120 +92,183 @@ class AccessAccessorPhp52 extends AccessBase
 			{
 				$property->setAccessible(true);
 			}
-			return (object) array(
-				'get' => $this->callback('$instance', '
-					if ($instance)
-					{
-						return $property->getValue($instance);
-					}
-					return $property->getValue();
-				', array('property' => $property)),
-				'set' => $this->callback('$instance, $value', '
-					if ($instance)
-					{
-						$property->setValue($instance, $value);
-					}
-					else
-					{
-						$property->setValue($value);
-					}
-				', array('property' => $property)),
-			);
+			return self::callback('$instance', '
+				if ($instance)
+				{
+					return $property->getValue($instance);
+				}
+				return $property->getValue();
+			', array('property' => $property));
 		}
-		else if ($property->isProtected())
+		else if ($isStatic === false AND $property->isPrivate() AND !$property->isStatic())
 		{
-			return (object) array(
-				'get' => $this->callback('$instance', '
-					if ($instance AND $property->isStatic()) $instance = NULL;
-					return call_user_func(array($helperClassName, "__AccessAccessor_php52__get"), $instance, $propertyName);
-				', array(
-					'property' => $property,
-					'helperClassName' => $this->getHelperClass($property->getDeclaringClass()),
-					'propertyName' => $property->getName(),
-				)),
-				'set' => $this->callback('$instance, $value', '
-					if ($instance AND $property->isStatic()) $instance = NULL;
-					return call_user_func(array($helperClassName, "__AccessAccessor_php52__set"), $instance, $propertyName, $value);
-				', array(
-					'property' => $property,
-					'helperClassName' => $this->getHelperClass($property->getDeclaringClass()),
-					'propertyName' => $property->getName(),
-				)),
-			);
+			return self::callback('$instance', '
+				if ($instance)
+				{
+					$array = (array) $instance;
+					return $array["\0{$className}\0{$propertyName}"];
+				}
+				return call_user_func(AccessAccessorPhp52::accessPropertyGet($property, true), $instance);
+			', array(
+				'className' => $property->getDeclaringClass()->getName(),
+				'propertyName' => $property->getName(),
+				'property' => $property,
+			));
 		}
-		else if ($property->isPrivate())
+		else
 		{
-			if ($property->isStatic())
+			return self::callback('$instance', '
+				return call_user_func($helperCallback, $instance, $isStatic ? NULL : $instance, $propertyName);
+			', array(
+				'isStatic' => $property->isStatic(),
+				'helperCallback' => self::getHelperCallback($property, 'get'),
+				'propertyName' => $property->getName(),
+			));
+		}
+	}
+
+	/**
+	 * @param ReflectionProperty
+	 * @return callable(object|NULL $instance, mixed $value)
+	 */
+	public static function accessPropertySet(ReflectionProperty $property)
+	{
+		if (PHP_VERSION_ID >= 50300 OR $property->isPublic())
+		{
+			if (PHP_VERSION_ID >= 50300)
 			{
-				throw new Exception('AccessProperty needs PHP 5.3.0 or newer to access static private property.');
+				$property->setAccessible(true);
 			}
-			return (object) array(
-				'get' => $this->callback('$instance', '
-					if ($instance)
-					{
-						$array = (array) $instance;
-						return $array["\0{$className}\0{$propertyName}"];
-					}
-					throw new Exception("AccessProperty needs PHP 5.3.0 or newer to access static private property.");
-				', array(
-					'className' => $property->getDeclaringClass()->getName(),
-					'propertyName' => $property->getName(),
-				)),
-				'set' => $this->callback('$instance, $value', '
-					throw new Exception("AccessProperty needs PHP 5.3.0 or newer to write to private property.");
-				'),
-			);
+			return self::callback('$instance, $value', '
+				if ($instance)
+				{
+					$property->setValue($instance, $value);
+				}
+				else
+				{
+					$property->setValue($value);
+				}
+			', array('property' => $property));
+		}
+		else
+		{
+			return self::callback('$instance, $value', '
+				return call_user_func($helperCallback, $instance, $isStatic ? NULL : $instance, $propertyName, $value);
+			', array(
+				'isStatic' => $property->isStatic(),
+				'helperCallback' => self::getHelperCallback($property, 'set'),
+				'propertyName' => $property->getName(),
+			));
 		}
 	}
 
 	/**
 	 * Dynamically creates helper subclass.
 	 *
-	 * @param ReflectionClass
+	 * @param ReflectionProperty|ReflectionMethod
+	 * @param string
 	 * @return string helper class name
 	 */
-	protected function getHelperClass(ReflectionClass $class)
+	private static function getHelperCallback(Reflector $what, $action)
+	{
+		$hasExtension = self::hasExtensionSupport();
+		$needExtension = false;
+
+		if ($what instanceof ReflectionMethod AND $what->isPrivate())
+		{
+			if (!$hasExtension) throw new Exception('AccessMethod needs PHP 5.3.2 or newer to call private method.');
+			$needExtension = true;
+		}
+		if ($what instanceof ReflectionProperty AND $action === 'get' AND $what->isPrivate() AND $what->isStatic())
+		{
+			if (!$hasExtension) throw new Exception("AccessProperty needs PHP 5.3.0 or newer to access static private property.");
+			$needExtension = true;
+		}
+		if ($what instanceof ReflectionProperty AND $action === 'set' AND $what->isPrivate())
+		{
+			if (!$hasExtension) throw new Exception("AccessProperty needs PHP 5.3.0 or newer to write to private property.");
+			$needExtension = true;
+		}
+
+		$class = $what->getDeclaringClass();
+
+		if ($class->isFinal())
+		{
+			if (!$hasExtension) throw new Exception('Access needs PHP 5.3 to work with final classes.');
+			$needExtension = true;
+		}
+
+		list($helperClass, $prefix) = self::getHelperClass($class, $needExtension ? $hasExtension : NULL);
+		$helperMethod = "{$prefix}{$action}";
+		if ($needExtension AND ($hasExtension === 'runkit0' OR $hasExtension === 'classkit')) // does not support static methods
+		{
+			return self::callback('$instance, $p1, $p2, $p3 = null', "
+				if (\$instance) \$instance->$helperMethod(\$instance, \$p1, \$p2, \$p3);
+				return @$helperClass::$helperMethod(\$instance, \$p1, \$p2, \$p3); // @ - Non-static method should not be called statically
+			");
+		}
+		return array($helperClass, $helperMethod);
+	}
+
+	private static function getHelperClass(ReflectionClass $class, $extension)
 	{
 		$className = $class->getName();
-		if (!isset(self::$helperClasses[$className]))
+		$cache = & self::$helperClasses[$className][$extension ? 1 : 0];
+		if ($cache === NULL)
 		{
-			if ($class->isFinal())
+			$prefix = '__AccessAccessor_php52__' . md5(lcg_value());
+			$impl = array(
+				array('invoke', '$instance, $object, $method, $arguments', 'return call_user_func_array(array($object, $method), $arguments);'),
+				array('get', '$instance, $object, $property', "
+					if (\$object) return \$object->{\$property};
+					return {$className}::\${\$property};
+				"),
+				array('set', '$instance, $object, $property, $value', "
+					if (\$object) \$object->{\$property} = \$value;
+					else {$className}::\${\$property} = \$value;
+				"),
+			);
+			if ($extension)
 			{
-				throw new Exception('Access needs PHP 5.3 to work with final classes.');
-			}
-
-			$helperClassName = str_replace('\\', '__', $className) . '__AccessAccessor_php52__' . md5(lcg_value());
-			eval("
-				abstract class {$helperClassName} extends {$className}
+				foreach ($impl as $list)
 				{
-					static function __AccessAccessor_php52__invoke(\$object, \$method, \$arguments)
+					list($methodName, $methodParameters, $methodBody) = $list;
+					$methodName = "{$prefix}{$methodName}";
+					if ($extension === 'runkit1')
 					{
-						return call_user_func_array(array(\$object, \$method), \$arguments);
+						$res = runkit_method_add($className, $methodName, $methodParameters, $methodBody, RUNKIT_ACC_STATIC | RUNKIT_ACC_STATIC);
 					}
-					static function __AccessAccessor_php52__get(\$object, \$property)
+					else if ($extension === 'runkit0')
 					{
-						if (\$object)
-						{
-							return \$object->{\$property};
-						}
-						return {$className}::\${\$property};
+						$res = runkit_method_add($className, $methodName, $methodParameters, $methodBody, RUNKIT_ACC_STATIC);
 					}
-					static function __AccessAccessor_php52__set(\$object, \$property, \$value)
+					else if ($extension === 'classkit')
 					{
-						if (\$object)
-						{
-							\$object->{\$property} = \$value;
-						}
-						else
-						{
-							{$className}::\${\$property} = \$value;
-						}
+						$res = classkit_method_add($className, $methodName, $methodParameters, $methodBody, CLASSKIT_ACC_PUBLIC);
 					}
+					else if ($extension === 'runkit7')
+					{
+						$res = runkit7_method_add($className, $methodName, $methodParameters, $methodBody, RUNKIT7_ACC_STATIC | RUNKIT7_ACC_STATIC);
+					}
+					if (!$res || !method_exists($className, $methodName)) throw new Exception('runkit/classkit error');
 				}
-			");
-			self::$helperClasses[$className] = $helperClassName;
+				$cache = array($className, $prefix);
+			}
+			else
+			{
+				$helperClassName = str_replace('\\', '__', $className) . $prefix;
+				$code = "abstract class {$helperClassName} extends {$className} {";
+				foreach ($impl as $list)
+				{
+					list($methodName, $methodParameters, $methodBody) = $list;
+					$code .= "\nstatic function {$prefix}{$methodName}({$methodParameters}) {\n{$methodBody}\n}\n";
+				}
+				$code .= "}";
+				eval($code);
+				$cache = array($helperClassName, $prefix);
+			}
 		}
-		return self::$helperClasses[$className];
+		return $cache;
 	}
 
 	/**
@@ -203,7 +279,7 @@ class AccessAccessorPhp52 extends AccessBase
 	 * @param array variableName => mixed
 	 * @return callable
 	 */
-	protected function callback($parameters, $body, array $uses = array())
+	private static function callback($parameters, $body, array $uses = array())
 	{
 		self::$callbackUses[] = $uses;
 		return create_function($parameters, '
