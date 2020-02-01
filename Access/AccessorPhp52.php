@@ -135,7 +135,6 @@ class AccessAccessorPhp52 extends AccessBase
 					}
 					throw new Exception("AccessProperty needs PHP 5.3.0 or newer to access static private property.");
 				', array(
-					'helperClassName' => $this->getHelperClass($property->getDeclaringClass()),
 					'className' => $property->getDeclaringClass()->getName(),
 					'propertyName' => $property->getName(),
 				)),
