@@ -75,7 +75,7 @@ abstract class AccessBase
 	 */
 	public static function __callStatic($name, $args)
 	{
-		$class = get_called_class();
+		$class = function_exists('get_called_class') ? get_called_class() : get_class();
 		throw new Exception("Call undefined static method $class::$name().");
 	}
 
