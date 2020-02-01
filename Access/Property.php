@@ -32,18 +32,36 @@ class AccessProperty extends AccessBase
 	 */
 	public function __construct($object, $property)
 	{
-		try {
-			$r = new ReflectionProperty($object, $property);
-		} catch (ReflectionException $e) {
-			$class = $object;
-			while ($class = get_parent_class($class))
+		$r = NULL;
+		$class = is_object($object) ? get_class($object) : $object;
+		$autoload = (PHP_VERSION_ID < 50500 AND PHP_VERSION_ID >= 50600); // avoiding autoload for php 5.5 finally bug #67047
+		if (
+			class_exists($class, $autoload) OR
+			(function_exists('trait_exists') AND trait_exists($class, $autoload))
+		) // avoiding try-catch on ReflectionClass for php 5.5 finally bug #66608
+		{
+			do
 			{
-				try {
-					$r = new ReflectionProperty($class, $property);
-					break;
-				} catch (ReflectionException $ee) {}
+				$rc = new ReflectionClass($class);
+				if ($rc->hasProperty($property)) // avoiding try-catch on ReflectionProperty for php 5.5 finally bug #66608
+				{
+					try
+					{
+						$r = new ReflectionProperty($class, $property);
+						break;
+					}
+					catch (ReflectionException $e)
+					{
+						// hasProperty is not correct for private properties in php 5.2 / 5.3 bug #49719
+						// but it is fixed in in 5.5 so try-catch is not problem for finally bug
+					}
+				}
 			}
-			if (!isset($r)) throw $e;
+			while ($class = get_parent_class($class));
+		}
+		if ($r === NULL)
+		{
+			$r = new ReflectionProperty($object, $property);
 		}
 		parent::__construct($object, $r);
 		$ac = PHP_VERSION_ID < 50300 ? 'AccessAccessorPhp52' : 'AccessAccessor';
