@@ -165,7 +165,14 @@ class AccessClass_call_Test extends TestCase
 	public function testArgsRequered()
 	{
 		$a = new AccessClass(new TestAccessMethod);
-		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::args()');
+		if (PHP_VERSION_ID >= 70100)
+		{
+			$this->setExpectedException('ArgumentCountError', 'Too few arguments to function TestAccessMethod::args(), 0 passed and exactly 3 expected');
+		}
+		else
+		{
+			$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::args()');
+		}
 		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$this->assertSame(6, $a->args());
 	}
@@ -173,7 +180,14 @@ class AccessClass_call_Test extends TestCase
 	public function testArgsProtectedRequered()
 	{
 		$a = new AccessClass(new TestAccessMethod);
-		$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::argsProtected()');
+		if (PHP_VERSION_ID >= 70100)
+		{
+			$this->setExpectedException('ArgumentCountError', 'Too few arguments to function TestAccessMethod::argsProtected(), 0 passed and exactly 3 expected');
+		}
+		else
+		{
+			$this->setExpectedException('PHPUnit_Framework_Error_Warning', 'Missing argument 1 for TestAccessMethod::argsProtected()');
+		}
 		$this->assertSame(6, $a->argsProtected());
 	}
 }
