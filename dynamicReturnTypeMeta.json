@@ -1,0 +1,21 @@
+/** configuration file for PhpStorm plugin DynamicReturnTypePlugin (https://plugins.jetbrains.com/plugin/7251-dynamicreturntypeplugin) */
+{
+	"methodCalls": [
+		{
+			"class": "\\AccessClass",
+			"method": "asInstance",
+			"position": 0
+		}
+		/** todo AccessBase::asInstance? */
+	],
+	"functionCalls": [
+		{
+			"function": "\\Access",
+			"position": 0
+		},
+		{
+			"function": "\\AccessProxy",
+			"position": 0
+		}
+	]
+}
