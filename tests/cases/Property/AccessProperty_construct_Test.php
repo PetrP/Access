@@ -52,7 +52,14 @@ class AccessProperty_construct_Test extends TestCase
 
 	public function testUnexistsClass()
 	{
-		$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');
+		if (PHP_VERSION_ID >= 80000)
+		{
+			$this->setExpectedException('ReflectionException', 'Class "FooBar" does not exist');
+		}
+		else
+		{
+			$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');
+		}
 		new AccessProperty('FooBar', 'private');
 	}
 
@@ -116,7 +123,18 @@ EOT;
 		{
 			$this->markTestSkipped('missing finally');
 		}
-		$this->setExpectedException('Exception', class_exists($class) ? "Property $class::$$property does not exist" : "Class $class does not exist");
+		if (class_exists($class))
+		{
+			$this->setExpectedException('ReflectionException', "Property $class::$$property does not exist");
+		}
+		else if (PHP_VERSION_ID >= 80000)
+		{
+			$this->setExpectedException('ReflectionException', "Class \"$class\" does not exist");
+		}
+		else
+		{
+			$this->setExpectedException('ReflectionException', "Class $class does not exist");
+		}
 		$class = var_export($class, true);
 		$property = var_export($property, true);
 		$php = <<<EOT

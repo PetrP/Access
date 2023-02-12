@@ -89,6 +89,7 @@ assert($a->foo['arrayKey']->getInstance() instanceof Bar);
 
 Library has no external dependencies.
 
+Up to PHP <= 8.2 tested.
 Fully works with PHP >= 5.3.2.
 PHP >= 5.2.0 is supported partially (see below).
 

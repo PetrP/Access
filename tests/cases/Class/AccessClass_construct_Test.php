@@ -28,7 +28,14 @@ class AccessClass_construct_Test extends TestCase
 
 	public function testUnexistsClass()
 	{
-		$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');
+		if (PHP_VERSION_ID >= 80000)
+		{
+			$this->setExpectedException('ReflectionException', 'Class "FooBar" does not exist');
+		}
+		else
+		{
+			$this->setExpectedException('ReflectionException', 'Class FooBar does not exist');
+		}
 		new AccessClass('FooBar');
 	}
 

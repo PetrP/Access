@@ -65,7 +65,7 @@ function Access($object, $what = null)
 	{
 		return new AccessClass($object);
 	}
-	else if ($what{0} === '$')
+	else if (is_string($what) && strncmp($what, '$', 1) === 0)
 	{
 		return new AccessProperty($object, substr($what, 1));
 	}
