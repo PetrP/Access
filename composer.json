@@ -1,6 +1,8 @@
 {
 		"name": "petrp/access",
 		"description": "Access - Tool for access to private and protected members of object. It's handy for unit tests.",
+		"keywords": ["testing", "dev"],
+		"type": "library",
 		"homepage": "https://github.com/PetrP/Access",
 		"license": "BSD-3-Clause",
 		"authors": [
