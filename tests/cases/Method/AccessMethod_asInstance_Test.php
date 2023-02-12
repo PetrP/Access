@@ -8,7 +8,7 @@
  */
 class AccessMethod_asInstance_Test extends TestCase
 {
-	public function test()
+	public function test1()
 	{
 		$o1 = new TestAccessMethod;
 		$o2 = new TestAccessMethod;

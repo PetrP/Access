@@ -8,7 +8,7 @@
  */
 class AccessProperty_asInstance_Test extends TestCase
 {
-	public function test()
+	public function test1()
 	{
 		$o1 = new TestAccessProperty;
 		$o2 = new TestAccessProperty;

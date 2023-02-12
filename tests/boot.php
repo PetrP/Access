@@ -1,22 +1,26 @@
 <?php
 
-require_once dirname(__FILE__) . '/libs/Nette/loader.php';
-require_once dirname(__FILE__) . '/libs/dump.php';
+require_once dirname(__FILE__) . '/../vendor/autoload.php';
 require_once dirname(__FILE__) . '/../src/Init.php';
 
-NetteDebug::get()->enable(false);
-NetteDebug::get()->strictMode = true;
+/** @tracySkipLocation */
+function dd($var)
+{
+	Tracy\Debugger::barDump(func_num_args() === 1 ? $var : func_get_args());
+	return $var;
+}
+
+$configurator = class_exists('Nette\Bootstrap\Configurator') ? new Nette\Bootstrap\Configurator : new Nette\Configurator;
+$configurator->enableDebugger();
+$configurator->setTempDirectory( __DIR__ . '/tmp');
+$configurator->createRobotLoader()
+	->addDirectory(__DIR__ . '/cases')
+	->register()
+;
 
 date_default_timezone_set('Europe/Prague');
 
 define('TEMP_DIR', dirname(__FILE__) . '/tmp');
-
-$r = new RobotLoader;
-$r->setCacheStorage(Environment::getContext()->cacheStorage);
-$r->addDirectory(dirname(__FILE__) . '/libs');
-$r->addDirectory(dirname(__FILE__) . '/cases');
-$r->register();
-unset($r, $storage);
 
 if (PHP_VERSION_ID < 50300)
 {

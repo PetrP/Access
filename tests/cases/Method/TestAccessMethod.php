@@ -1,6 +1,6 @@
 <?php
 
-class TestAccessMethod extends Object
+class TestAccessMethod extends TestSmartObject
 {
 	private function _private()
 	{

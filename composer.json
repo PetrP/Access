@@ -15,5 +15,12 @@
 		},
 		"require": {
 			"php": ">=5.2.0"
+		},
+		"prefer-stable": true,
+		"minimum-stability": "dev",
+		"require-dev": {
+			"phpunit/phpunit": ">=3.5 <7",
+			"nette/nette": ">=2.3",
+			"petrp/httpphpunit": ">=2.0"
 		}
 }

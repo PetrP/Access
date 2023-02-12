@@ -1,13 +1,10 @@
 <?php
 
-require_once dirname(__FILE__) . '/libs/Nette/loader.php';
-require_once dirname(__FILE__) . '/libs/HttpPHPUnit/init.php';
-
 function run()
 {
-	$http = new HttpPHPUnit;
-
 	require_once dirname(__FILE__) . '/boot.php';
+
+	$http = new HttpPHPUnit;
 
 	$c = $http->coverage(dirname(__FILE__) . '/../src', dirname(__FILE__) . '/report');
 	if (PHP_VERSION_ID < 50300)
@@ -21,4 +18,4 @@ function run()
 
 	$http->run(dirname(__FILE__) . '/cases');
 }
-callback('run')->invoke();
+call_user_func('run');

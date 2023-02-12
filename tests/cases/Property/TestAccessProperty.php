@@ -1,6 +1,6 @@
 <?php
 
-class TestAccessProperty extends Object
+class TestAccessProperty extends TestSmartObject
 {
 	private $private = 1;
 	protected $protected = 2;
