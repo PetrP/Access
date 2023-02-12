@@ -1,11 +1,9 @@
-Access
-======
+# Access
 
 Tool for access to private and protected members of object. It's handy for unit tests.
 
 
-Property
---------
+## Property
 
 ```php
 class Foo
@@ -16,30 +14,28 @@ class Foo
 $a = Access(new Foo, '$foo');
 
 $a->set(3);
-assert(3, $a->get());
+assert($a->get() === 3);
 ```
 
 
-Method
-------
+## Method
 
 ```php
 class Foo
 {
-	private function foo()
+	private function bar()
 	{
 		return 4;
 	}
 }
 
-$a = Access(new Foo, 'foo');
+$a = Access(new Foo, 'bar');
 
-assert(4, $a->call());
+assert($a->call() === 4);
 ```
 
 
-Whole class
------------
+## Whole class
 
 ```php
 class Foo
@@ -55,8 +51,8 @@ class Foo
 $a = Access(new Foo);
 
 $a->foo = 10;
-assert(10, $a->foo);
-assert(11, $a->bar(1));
+assert($a->foo === 10);
+assert($a->bar(1) === 11);
 ```
 
 
@@ -89,8 +85,8 @@ assert($a->foo['arrayKey']->getInstance() instanceof Bar);
 ```
 
 
-Requirements
-------------
+## Requirements
+
 Library has no external dependencies.
 
 Fully works with PHP >= 5.3.2.
@@ -107,8 +103,7 @@ PHP >= 5.2.0 AND < 5.3.2 not supported:
  * No limitation when extension [runkit](https://pecl.php.net/package/runkit) or [classkit](https://pecl.php.net/package/classkit) is provided.
 
 
-Instalations
-------------
+## Instalations
 
 ### GitHub
 
@@ -122,8 +117,9 @@ require_once __DIR__ . '/.../Access/src/Init.php';
 
 Access is available on [Packagist](http://packagist.org/packages/PetrP/Access), where you can get it via [Composer](http://getcomposer.org).
 
-
-Author
--------
-Petr Procházka
-http://petrp.cz petr@petrp.cz
+```sh
+composer require petrp/access
+```
+```php
+require_once __DIR__ . '/vendor/autoload.php';
+```
