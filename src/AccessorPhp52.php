@@ -54,11 +54,11 @@ class AccessAccessorPhp52
 
 	/**
 	 * @param ReflectionMethod
-	 * @return callable(object|NULL $instance, array $args)
+	 * @return callable(object|null $instance, array $args)
 	 */
 	public static function accessMethod(ReflectionMethod $method)
 	{
-		if (PHP_VERSION_ID >= 50302 OR $method->isPublic())
+		if (PHP_VERSION_ID >= 50302 || $method->isPublic())
 		{
 			if (PHP_VERSION_ID >= 50302)
 			{
@@ -82,11 +82,11 @@ class AccessAccessorPhp52
 
 	/**
 	 * @param ReflectionProperty
-	 * @return callable(object|NULL $instance)
+	 * @return callable(object|null $instance)
 	 */
 	public static function accessPropertyGet(ReflectionProperty $property, $isStatic = false)
 	{
-		if (PHP_VERSION_ID >= 50300 OR $property->isPublic())
+		if (PHP_VERSION_ID >= 50300 || $property->isPublic())
 		{
 			if (PHP_VERSION_ID >= 50300)
 			{
@@ -100,7 +100,7 @@ class AccessAccessorPhp52
 				return $property->getValue();
 			', array('property' => $property));
 		}
-		else if ($isStatic === false AND $property->isPrivate() AND !$property->isStatic())
+		else if ($isStatic === false && $property->isPrivate() && !$property->isStatic())
 		{
 			return self::callback('$instance', '
 				if ($instance)
@@ -118,7 +118,7 @@ class AccessAccessorPhp52
 		else
 		{
 			return self::callback('$instance', '
-				return call_user_func($helperCallback, $instance, $isStatic ? NULL : $instance, $propertyName);
+				return call_user_func($helperCallback, $instance, $isStatic ? null : $instance, $propertyName);
 			', array(
 				'isStatic' => $property->isStatic(),
 				'helperCallback' => self::getHelperCallback($property, 'get'),
@@ -129,11 +129,11 @@ class AccessAccessorPhp52
 
 	/**
 	 * @param ReflectionProperty
-	 * @return callable(object|NULL $instance, mixed $value)
+	 * @return callable(object|null $instance, mixed $value)
 	 */
 	public static function accessPropertySet(ReflectionProperty $property)
 	{
-		if (PHP_VERSION_ID >= 50300 OR $property->isPublic())
+		if (PHP_VERSION_ID >= 50300 || $property->isPublic())
 		{
 			if (PHP_VERSION_ID >= 50300)
 			{
@@ -153,7 +153,7 @@ class AccessAccessorPhp52
 		else
 		{
 			return self::callback('$instance, $value', '
-				return call_user_func($helperCallback, $instance, $isStatic ? NULL : $instance, $propertyName, $value);
+				return call_user_func($helperCallback, $instance, $isStatic ? null : $instance, $propertyName, $value);
 			', array(
 				'isStatic' => $property->isStatic(),
 				'helperCallback' => self::getHelperCallback($property, 'set'),
@@ -174,17 +174,17 @@ class AccessAccessorPhp52
 		$hasExtension = self::hasExtensionSupport();
 		$needExtension = false;
 
-		if ($what instanceof ReflectionMethod AND $what->isPrivate())
+		if ($what instanceof ReflectionMethod && $what->isPrivate())
 		{
 			if (!$hasExtension) throw new Exception('AccessMethod needs PHP 5.3.2 or newer to call private method.');
 			$needExtension = true;
 		}
-		if ($what instanceof ReflectionProperty AND $action === 'get' AND $what->isPrivate() AND $what->isStatic())
+		if ($what instanceof ReflectionProperty && $action === 'get' && $what->isPrivate() && $what->isStatic())
 		{
 			if (!$hasExtension) throw new Exception("AccessProperty needs PHP 5.3.0 or newer to access static private property.");
 			$needExtension = true;
 		}
-		if ($what instanceof ReflectionProperty AND $action === 'set' AND $what->isPrivate())
+		if ($what instanceof ReflectionProperty && $action === 'set' && $what->isPrivate())
 		{
 			if (!$hasExtension) throw new Exception("AccessProperty needs PHP 5.3.0 or newer to write to private property.");
 			$needExtension = true;
@@ -198,9 +198,9 @@ class AccessAccessorPhp52
 			$needExtension = true;
 		}
 
-		list($helperClass, $prefix) = self::getHelperClass($class, $needExtension ? $hasExtension : NULL);
+		list($helperClass, $prefix) = self::getHelperClass($class, $needExtension ? $hasExtension : null);
 		$helperMethod = "{$prefix}{$action}";
-		if ($needExtension AND ($hasExtension === 'runkit0' OR $hasExtension === 'classkit')) // does not support static methods
+		if ($needExtension && ($hasExtension === 'runkit0' || $hasExtension === 'classkit')) // does not support static methods
 		{
 			return self::callback('$instance, $p1, $p2, $p3 = null', "
 				if (\$instance) \$instance->$helperMethod(\$instance, \$p1, \$p2, \$p3);
@@ -214,7 +214,7 @@ class AccessAccessorPhp52
 	{
 		$className = $class->getName();
 		$cache = & self::$helperClasses[$className][$extension ? 1 : 0];
-		if ($cache === NULL)
+		if ($cache === null)
 		{
 			$prefix = '__AccessAccessor_php52__' . md5(lcg_value());
 			$impl = array(

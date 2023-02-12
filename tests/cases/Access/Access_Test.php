@@ -11,7 +11,7 @@ class Access_Test extends TestCase
 	{
 		$a = Access('TestAccessProperty');
 		$this->assertInstanceOf('AccessClass', $a);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->assertSame('TestAccessProperty', $this->readAttribute($a, 'reflection')->getName());
 	}
 
@@ -28,7 +28,7 @@ class Access_Test extends TestCase
 	{
 		$a = Access('TestAccessProperty', '$private');
 		$this->assertInstanceOf('AccessProperty', $a);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->assertSame('TestAccessProperty', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
 		$this->assertSame('private', $this->readAttribute($a, 'reflection')->getName());
 	}
@@ -48,7 +48,7 @@ class Access_Test extends TestCase
 		$this->expectedExceptionBeforePhpVersion(50300, 'Exception', 'AccessMethod needs PHP 5.3.2 or newer to call private method.');
 		$a = Access('TestAccessMethod', '_private');
 		$this->assertInstanceOf('AccessMethod', $a);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
 		$this->assertSame('_private', $this->readAttribute($a, 'reflection')->getName());
 	}
@@ -57,7 +57,7 @@ class Access_Test extends TestCase
 	{
 		$a = Access('TestAccessMethod', '_protected');
 		$this->assertInstanceOf('AccessMethod', $a);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->assertSame('TestAccessMethod', $this->readAttribute($a, 'reflection')->getDeclaringClass()->getName());
 		$this->assertSame('_protected', $this->readAttribute($a, 'reflection')->getName());
 	}

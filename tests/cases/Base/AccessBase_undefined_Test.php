@@ -40,7 +40,7 @@ class AccessBase_undefined_Test extends TestCase
 	public function testSet()
 	{
 		$this->setExpectedException('Exception', 'Cannot write to undeclared property AccessProperty::$name.');
-		$this->a->__set('name', NULL);
+		$this->a->__set('name', null);
 	}
 
 	public function testIsset()

@@ -11,7 +11,7 @@ class AccessProperty_construct_Test extends TestCase
 	public function testClass()
 	{
 		$a = new AccessProperty('TestAccessProperty', 'private');
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$r = $this->readAttribute($a, 'reflection');
 		$this->assertInstanceOf('ReflectionProperty', $r);
 		$this->assertSame('TestAccessProperty', $r->getDeclaringClass()->getName());
@@ -32,7 +32,7 @@ class AccessProperty_construct_Test extends TestCase
 	public function testClassOnParent()
 	{
 		$a = new AccessProperty('TestAccessProperty2', 'private');
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$r = $this->readAttribute($a, 'reflection');
 		$this->assertInstanceOf('ReflectionProperty', $r);
 		$this->assertSame('TestAccessProperty', $r->getDeclaringClass()->getName());

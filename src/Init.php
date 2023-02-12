@@ -56,12 +56,12 @@ if (PHP_VERSION_ID <= 50302)
  * </code>
  *
  * @param object|string object or class name
- * @param string|NULL $property or method
+ * @param string|null $property or method
  * @return AccessMethod|AccessProperty|AccessClass
  */
-function Access($object, $what = NULL)
+function Access($object, $what = null)
 {
-	if ($what === NULL)
+	if ($what === null)
 	{
 		return new AccessClass($object);
 	}

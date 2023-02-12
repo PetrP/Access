@@ -53,7 +53,7 @@ class AccessMethod extends AccessBase
 	 */
 	public function callArgs(array $args = array())
 	{
-		if (!$this->instance AND !$this->reflection->isStatic())
+		if (!$this->instance && !$this->reflection->isStatic())
 		{
 			$c = $this->reflection->getDeclaringClass()->getName();
 			$n = $this->reflection->getName();

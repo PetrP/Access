@@ -44,7 +44,7 @@ class AccessProxy_asInstance_Test extends TestCase
 	{
 		$o = new TestAccessMethod;
 		$a = new AccessProxy('TestAccessMethod');
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$a->asInstance($o);
 		$this->assertAttributeSame($o, 'instance', $a);
 	}
@@ -54,33 +54,37 @@ class AccessProxy_asInstance_Test extends TestCase
 		$o = new TestAccessMethod;
 		$a = new AccessProxy($o);
 		$this->assertAttributeSame($o, 'instance', $a);
-		$a->asInstance(NULL);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$a->asInstance(null);
+		$this->assertAttributeSame(null, 'instance', $a);
 	}
 
 	public function testBad()
 	{
 		$o = new TestAccessMethod;
 		$a = new AccessProxy($o);
-		try {
+		try
+		{
 			$a->asInstance(123);
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
 		$this->assertAttributeSame($o, 'instance', $a);
-		$this->setExpectedException('Exception', 'Instance must be object or NULL.');
+		$this->setExpectedException('Exception', 'Instance must be object or null.');
 		throw $e;
 	}
 
 	public function testDiferentObject()
 	{
 		$a = new AccessProxy('TestAccessMethod');
-		try {
+		try
+		{
 			$a->asInstance($this);
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->setExpectedException('Exception', 'Must be instance of accessible class.');
 		throw $e;
 	}
@@ -97,10 +101,12 @@ class AccessProxy_asInstance_Test extends TestCase
 	public function testArrayBad1()
 	{
 		$a = new AccessProxy(array());
-		try {
+		try
+		{
 			$a->asInstance($this);
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
 		$this->assertAttributeSame(array(), 'instance', $a);
 		$this->setExpectedException('Exception', 'Instance must be array');
@@ -110,13 +116,15 @@ class AccessProxy_asInstance_Test extends TestCase
 	public function testArrayBad2()
 	{
 		$a = new AccessProxy($this);
-		try {
+		try
+		{
 			$a->asInstance(array());
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
 		$this->assertAttributeSame($this, 'instance', $a);
-		$this->setExpectedException('Exception', 'Instance must be object or NULL.');
+		$this->setExpectedException('Exception', 'Instance must be object or null.');
 		throw $e;
 	}
 

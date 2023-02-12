@@ -21,7 +21,7 @@ class AccessAccessor
 
 	/**
 	 * @param ReflectionMethod
-	 * @return callable(object|NULL $instance, array $args)
+	 * @return callable(object|null $instance, array $args)
 	 */
 	public static function accessMethod(ReflectionMethod $method)
 	{
@@ -38,7 +38,7 @@ class AccessAccessor
 
 	/**
 	 * @param ReflectionProperty
-	 * @return callable(object|NULL $instance)
+	 * @return callable(object|null $instance)
 	 */
 	public static function accessPropertyGet(ReflectionProperty $property)
 	{
@@ -59,7 +59,7 @@ class AccessAccessor
 
 	/**
 	 * @param ReflectionProperty
-	 * @return callable(object|NULL $instance, mixed $value)
+	 * @return callable(object|null $instance, mixed $value)
 	 */
 	public static function accessPropertySet(ReflectionProperty $property)
 	{

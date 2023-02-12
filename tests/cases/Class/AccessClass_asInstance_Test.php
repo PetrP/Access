@@ -44,7 +44,7 @@ class AccessClass_asInstance_Test extends TestCase
 	{
 		$o = new TestAccessMethod;
 		$a = new AccessClass('TestAccessMethod');
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$a->asInstance($o);
 		$this->assertAttributeSame($o, 'instance', $a);
 	}
@@ -54,33 +54,37 @@ class AccessClass_asInstance_Test extends TestCase
 		$o = new TestAccessMethod;
 		$a = new AccessClass($o);
 		$this->assertAttributeSame($o, 'instance', $a);
-		$a->asInstance(NULL);
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$a->asInstance(null);
+		$this->assertAttributeSame(null, 'instance', $a);
 	}
 
 	public function testBad()
 	{
 		$o = new TestAccessMethod;
 		$a = new AccessClass($o);
-		try {
+		try
+		{
 			$a->asInstance(123);
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
 		$this->assertAttributeSame($o, 'instance', $a);
-		$this->setExpectedException('Exception', 'Instance must be object or NULL.');
+		$this->setExpectedException('Exception', 'Instance must be object or null.');
 		throw $e;
 	}
 
 	public function testDiferentObject()
 	{
 		$a = new AccessClass('TestAccessMethod');
-		try {
+		try
+		{
 			$a->asInstance($this);
 			$this->fail();
-		} catch (Exception $e) {}
+		}
+		catch (Exception $e) {}
 
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$this->setExpectedException('Exception', 'Must be instance of accessible class.');
 		throw $e;
 	}

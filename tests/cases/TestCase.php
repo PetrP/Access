@@ -5,7 +5,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
 
 	private $markAsSkippedInTearDown = false;
 
-	public function checkPhpVersion($version, $message = NULL)
+	public function checkPhpVersion($version, $message = null)
 	{
 		if (PHP_VERSION_ID < $version && !AccessAccessorPhp52::hasExtensionSupport())
 		{

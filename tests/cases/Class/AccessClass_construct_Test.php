@@ -10,7 +10,7 @@ class AccessClass_construct_Test extends TestCase
 	public function testClass()
 	{
 		$a = new AccessClass('TestAccessProperty');
-		$this->assertAttributeSame(NULL, 'instance', $a);
+		$this->assertAttributeSame(null, 'instance', $a);
 		$r = $this->readAttribute($a, 'reflection');
 		$this->assertInstanceOf('ReflectionClass', $r);
 		$this->assertSame('TestAccessProperty', $r->getName());

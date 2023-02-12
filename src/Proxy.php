@@ -18,7 +18,7 @@ class AccessProxy extends AccessClass implements ArrayAccess
 	public function __construct($object)
 	{
 		$object = $this->unproxy($object);
-		if (is_object($object) OR is_string($object))
+		if (is_object($object) || is_string($object))
 		{
 			parent::__construct($object);
 		}
@@ -110,7 +110,7 @@ class AccessProxy extends AccessClass implements ArrayAccess
 	{
 		if (is_array($this->instance))
 		{
-			if ($offset === NULL AND ($this->instance === array() OR array_keys($this->instance) === range(0, count($this->instance) - 1)))
+			if ($offset === null && ($this->instance === array() || array_keys($this->instance) === range(0, count($this->instance) - 1)))
 			{
 				$offset = count($this->instance);
 			}
@@ -141,16 +141,16 @@ class AccessProxy extends AccessClass implements ArrayAccess
 	 * @param mixed
 	 * @return AccessProxy
 	 */
-	private function proxy($value, $keyOrProperty = NULL)
+	private function proxy($value, $keyOrProperty = null)
 	{
-		if ($value === NULL OR is_scalar($value) OR is_resource($value) OR $value instanceof Generator)
+		if ($value === null || is_scalar($value) || is_resource($value) || $value instanceof Generator)
 		{
 			return $value;
 		}
-		else if (is_object($value) OR is_array($value))
+		else if (is_object($value) || is_array($value))
 		{
 			$proxy = new self($value);
-			if (is_array($value) AND func_num_args() > 1)
+			if (is_array($value) && func_num_args() > 1)
 			{
 				$proxy->propagate = array($this, $keyOrProperty);
 			}

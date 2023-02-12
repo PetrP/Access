@@ -86,7 +86,7 @@ class AccessClass extends AccessBase
 	}
 
 	/**
-	 * @param object|NULL
+	 * @param object|null
 	 * @return AccessClass $this
 	 */
 	public function asInstance($object)

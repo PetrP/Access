@@ -32,12 +32,12 @@ class AccessProperty extends AccessBase
 	 */
 	public function __construct($object, $property)
 	{
-		$r = NULL;
+		$r = null;
 		$class = is_object($object) ? get_class($object) : $object;
-		$autoload = (PHP_VERSION_ID < 50500 AND PHP_VERSION_ID >= 50600); // avoiding autoload for php 5.5 finally bug #67047
+		$autoload = (PHP_VERSION_ID < 50500 && PHP_VERSION_ID >= 50600); // avoiding autoload for php 5.5 finally bug #67047
 		if (
-			class_exists($class, $autoload) OR
-			(function_exists('trait_exists') AND trait_exists($class, $autoload))
+			class_exists($class, $autoload) ||
+			(function_exists('trait_exists') && trait_exists($class, $autoload))
 		) // avoiding try-catch on ReflectionClass for php 5.5 finally bug #66608
 		{
 			do
@@ -59,7 +59,7 @@ class AccessProperty extends AccessBase
 			}
 			while ($class = get_parent_class($class));
 		}
-		if ($r === NULL)
+		if ($r === null)
 		{
 			$r = new ReflectionProperty($object, $property);
 		}
@@ -98,7 +98,7 @@ class AccessProperty extends AccessBase
 
 	private function check()
 	{
-		if (!$this->instance AND !$this->reflection->isStatic())
+		if (!$this->instance && !$this->reflection->isStatic())
 		{
 			$c = $this->reflection->getDeclaringClass()->getName();
 			$n = $this->reflection->getName();

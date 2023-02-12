@@ -12,9 +12,9 @@ class AccessProxy_getInstance_Test extends TestCase
 	{
 		$o = new TestAccessMethod;
 		$a = new AccessProxy('TestAccessMethod');
-		$this->assertSame(NULL, $a->getInstance());
-		$a->asInstance(NULL);
-		$this->assertSame(NULL, $a->getInstance());
+		$this->assertSame(null, $a->getInstance());
+		$a->asInstance(null);
+		$this->assertSame(null, $a->getInstance());
 		$a->asInstance($o);
 		$this->assertSame($o, $a->getInstance());
 	}
@@ -25,8 +25,8 @@ class AccessProxy_getInstance_Test extends TestCase
 		$o2 = new TestAccessMethod;
 		$a = new AccessProxy($o);
 		$this->assertSame($o, $a->getInstance());
-		$a->asInstance(NULL);
-		$this->assertSame(NULL, $a->getInstance());
+		$a->asInstance(null);
+		$this->assertSame(null, $a->getInstance());
 		$a->asInstance($o2);
 		$this->assertSame($o2, $a->getInstance());
 	}

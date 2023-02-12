@@ -14,7 +14,7 @@ abstract class AccessBase
 	/** @var ReflectionClass|ReflectionMethod|ReflectionProperty */
 	protected $reflection;
 
-	/** @var object|NULL */
+	/** @var object|null */
 	protected $instance;
 
 	/**
@@ -31,7 +31,7 @@ abstract class AccessBase
 	}
 
 	/**
-	 * @param object|NULL
+	 * @param object|null
 	 * @return AccessBase $this
 	 */
 	public function asInstance($object)
@@ -51,9 +51,9 @@ abstract class AccessBase
 				throw new Exception('Must be instance of accessible class.');
 			}
 		}
-		else if ($object !== NULL)
+		else if ($object !== null)
 		{
-			throw new Exception('Instance must be object or NULL.');
+			throw new Exception('Instance must be object or null.');
 		}
 		$this->instance = $object;
 		return $this;
