@@ -11,7 +11,7 @@
 			}
 		],
 		"autoload": {
-			"files": ["Access/Init.php"]
+			"files": ["src/Init.php"]
 		},
 		"require": {
 			"php": ">=5.2.0"

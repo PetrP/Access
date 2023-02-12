@@ -2,7 +2,7 @@
 
 require_once dirname(__FILE__) . '/libs/Nette/loader.php';
 require_once dirname(__FILE__) . '/libs/dump.php';
-require_once dirname(__FILE__) . '/../Access/Init.php';
+require_once dirname(__FILE__) . '/../src/Init.php';
 
 NetteDebug::get()->enable(false);
 NetteDebug::get()->strictMode = true;

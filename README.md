@@ -115,7 +115,7 @@ Instalations
 Each version is tagged and available on [download page](https://github.com/PetrP/Access/tags).
 
 ```php
-require_once __DIR__ . '/libs/Access/Init.php';
+require_once __DIR__ . '/.../Access/src/Init.php';
 ```
 
 ### Composer & Packagist
